@@ -12,9 +12,9 @@ class Floor {
     this.w = w;
     this.h = h;
     let floorGeo = new THREE.PlaneGeometry(this.w, this.h);
-    let floorTexture = new THREE.TextureLoader().load("./floorMat.jpg");
+    let floorTexture = new THREE.TextureLoader().load("./floorMat2.jpg");
     floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
-    floorTexture.repeat.set(10, 10);
+    floorTexture.repeat.set(1, 1);
     let floorMat = new THREE.MeshLambertMaterial({
       map: floorTexture
     });
@@ -54,7 +54,7 @@ class WallWindow {
     part2.position.x = -this.w / 2 + 0.25;
     part3.position.x = this.w / 2 - 0.25;
     let part4Geo = new THREE.BoxGeometry(this.w, 2, 2);
-    let part4 = new THREE.Mesh(part4Geo, wallMat);
+    let part4 = new THREE.Mesh(part4Geo, whiteSilverMat);
     part4.position.y = -this.h;
     let part5Geo = new THREE.BoxGeometry(this.w, this.h, 0.25);
     let part5 = new THREE.Mesh(part5Geo, glassMat);
@@ -140,12 +140,12 @@ class OfficeDesk {
     part2.position.set(0, -this.h / 2, -this.w / 2 + 0.25);
 
     let part3Geo = new THREE.BoxGeometry(this.w - 1, this.h, 0.5);
-    let part3 = new THREE.Mesh(part3Geo, silverMat);
+    let part3 = new THREE.Mesh(part3Geo, woodMat3);
     part3.rotation.y = Math.PI * 0.5;
     part3.position.set(-this.l / 2 + 0.5, -this.h / 2, 0);
 
     let part4Geo = new THREE.BoxGeometry(this.l / 3, this.h - 1, this.w - 1);
-    let part4 = new THREE.Mesh(part4Geo, woodMat1);
+    let part4 = new THREE.Mesh(part4Geo, woodMat3);
     part4.position.set(this.l / 2 - this.l / 6, -(this.h + 1) / 2, 0);
 
     let part5Geo = new THREE.BoxGeometry(1, 0.25, 0.25);
@@ -200,7 +200,7 @@ class TeaDesk {
       0.25,
       30
     );
-    let part4 = new THREE.Mesh(part4Geo, silverMat);
+    let part4 = new THREE.Mesh(part4Geo, whiteSilverMat);
     part4.position.y = -this.h;
     this.desk.add(part1, part2, part3, part4);
     this.desk.position.set(this.x, this.h, this.z);
@@ -232,15 +232,16 @@ class MeetingDesk {
     let part1 = new THREE.Mesh(part1Geo, this.mat);
     let part2Geo = new THREE.CylinderGeometry(.5, .5, this.h, 30);
     let part2 = new THREE.Mesh(part2Geo, silverMat);
-    let part3Geo = new THREE.BoxGeometry(this.w/1.5, .5, 1);
-    let part3 = new THREE.Mesh(part3Geo, silverMat);
+    let part3Geo = new THREE.BoxGeometry(this.l/1.5, .5, 1);
+    let part3 = new THREE.Mesh(part3Geo, whiteSilverMat);
+    part3.rotation.y = Math.PI * .5;
     let part4 = part2.clone();
     let part5 = part3.clone();
     part1.position.y = this.h/2;
-    part2.position.z = this.l/2.5;
-    part4.position.z = -this.l/2.5;
-    part3.position.set(0, -this.h/2, this.l/2.5);
-    part5.position.set(0, -this.h/2, -this.l/2.5);
+    part2.position.x = this.w/2.5;
+    part4.position.x = -this.w/2.5;
+    part3.position.set(this.w/2.5, -this.h/2, 0);
+    part5.position.set(-this.w/2.5, -this.h/2, 0);
     this.desk.add(part1, part2, part3, part4, part5);
 
     let deskShape = new CANNON.Box(
@@ -261,15 +262,20 @@ class MeetingDesk {
     addShadow(this.desk);
   }
 }
-
 class Wall {
-  constructor(w, r, x, z, l = 2) {
+  constructor(w, r, x, z, textureX = 1, textureY = 1, l = 2) {
     this.w = w;
     this.r = r;
     this.x = x;
     this.z = z;
-    this.l = l
+    this.l = l;
+    this.textureX = textureX;
+    this.textureY = textureY;
     this.wall = new THREE.Group();
+    let wallTexture = new THREE.TextureLoader().load("./wallMat1.jpg");
+    wallTexture.wrapS = wallTexture.wrapT = THREE.RepeatWrapping;
+    wallTexture.repeat.set(this.textureX, this.textureY);
+    let wallMat = new THREE.MeshLambertMaterial({ map: wallTexture });
     let part1Geo = new THREE.BoxGeometry(this.w, 22, this.l);
     let part1 = new THREE.Mesh(part1Geo, wallMat);
     this.wall.add(part1);
@@ -330,7 +336,6 @@ class Plant {
     addShadow(this.plant);
   }
 }
-
 class Bookcase {
   constructor(w, h, r, x, z) {
     this.w = w;
@@ -392,19 +397,19 @@ class Forcer {
     this.forcer = new THREE.Group();
 
     let part1Geo = new THREE.BoxGeometry(this.w, this.h, 5);
-    let part1 = new THREE.Mesh(part1Geo, woodMat1);
+    let part1 = new THREE.Mesh(part1Geo, woodMat3);
     let part2Geo = new THREE.BoxGeometry(this.w + .5, .25, 5.5);
-    let part2 = new THREE.Mesh(part2Geo, grayMat);
+    let part2 = new THREE.Mesh(part2Geo, silverMat);
     part2.position.y = this.h / 2;
     let part3Geo = new THREE.BoxGeometry(1, .125, .25);
-    let part3 = new THREE.Mesh(part3Geo, whiteMat);
+    let part3 = new THREE.Mesh(part3Geo, whiteSilverMat);
     let part4 = part3.clone();
     let part5 = part3.clone();
     let part6 = part3.clone();
-    part3.position.set(-this.w / 3.5, this.h / 2 - 1, 2.5);
-    part4.position.set(this.w / 3.5, this.h / 2 - 1, 2.5);
-    part5.position.set(-this.w / 3.5, this.h / 2 - 2, 2.5);
-    part6.position.set(this.w / 3.5, this.h / 2 - 2, 2.5);
+    part3.position.set(-this.w / 3.5, this.h / 2 - 1.5, 2.5);
+    part4.position.set(this.w / 3.5, this.h / 2 - 1.5, 2.5);
+    part5.position.set(-this.w / 3.5, this.h / 2 - 2.5, 2.5);
+    part6.position.set(this.w / 3.5, this.h / 2 - 2.5, 2.5);
     this.forcer.add(part1, part2, part3, part4, part5, part6);
 
     let forcerShape = new CANNON.Box(
@@ -435,7 +440,7 @@ class Door {
     this.z = z;
     this.door = new THREE.Group();
     let part1Geo = new THREE.BoxGeometry(this.w, this.h, .25);
-    let part1 = new THREE.Mesh(part1Geo, woodMat2);
+    let part1 = new THREE.Mesh(part1Geo, whiteSilverMat);
     let part2Geo = new THREE.CylinderGeometry(.5, .5, 0.125, 30);
     let part2 = new THREE.Mesh(part2Geo, silverMat);
     let part3Geo = new THREE.BoxGeometry(1.5, .25, 0.25);
@@ -506,5 +511,39 @@ class Photo {
     this.photo.position.copy(this.photoBody.position);
     this.photo.quaternion.copy(this.photoBody.quaternion);
     addShadow(this.photo);
+  }
+}
+
+class Computer{
+  constructor(r, x, y, z){
+    this.r = r;
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.computer = new THREE.Group();
+    let part1Geo = new THREE.BoxGeometry(5, 4, .25);
+    let part1 = new THREE.Mesh(part1Geo, blackMat);
+    let part2Geo = new THREE.BoxGeometry(1, 2.5, .25);
+    let part2 = new THREE.Mesh(part2Geo, blackMat);
+    let part3Geo = new THREE.CylinderGeometry(1, 1, .125, 30);
+    let part3 = new THREE.Mesh(part3Geo, blackMat);
+    let part4Geo = new THREE.BoxGeometry(4, 2, .125);
+    let part4 = new THREE.Mesh(part4Geo, blackMat);
+    let part5Geo = new THREE.BoxGeometry(1.5, 1.5, .01);
+    let part5 = new THREE.Mesh(part5Geo, whiteMat);
+    let part6Geo = new THREE.BoxGeometry(.35, .125, .5);
+    let part6 = new THREE.Mesh(part6Geo, blackMat);
+    part1.rotation.x = Math.PI * -.1;
+    part2.position.y = -1.75;
+    part2.rotation.x = Math.PI * .05;
+    part3.position.y = -3;
+    part4.rotation.x = Math.PI * .5;
+    part4.position.set(0, -3, 2.5);
+    part5.rotation.x = Math.PI * .5;
+    part5.position.set(3.5, -3, 3);
+    part6.position.set(3.25, -2.925, 3);
+    this.computer.add(part1, part2, part3, part4, part5, part6);
+    this.computer.position.set(this.x, this.y, this.z);
+    this.computer.rotation.y = Math.PI * this.r;
   }
 }
