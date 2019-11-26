@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,11 +10,9 @@
       margin: 0;
       padding: 0;
     }
-
-    body {
+    #threeJs {
       height: 100vh;
     }
-
     #stats {
       position: absolute;
       left: 0;
@@ -23,40 +20,162 @@
     }
   </style>
 </head>
-
 <body>
   <div id="stats"></div>
-
+  <div id="threeJs"></div>
   <script src="./libs/three.min.js"></script>
-  <script src="./libs/GLTFLoader.js"></script>
-  <script src="./libs/DRACOLoader.js"></script>
   <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js'></script>
+  <script src="./libs/CannonDebugRenderer.js"></script>
+  <script src="./js/model.js"></script>
   <script>
-    let scene = new THREE.Scene();
+    //cannon
+    const timeStep = 1.0 / 60.0;
+    const world = new CANNON.World();
+    world.gravity.set(0, -200, 0);
+    world.broadphase = new CANNON.NaiveBroadphase();
+    //three
+    let scene, renderer, camera, width, height, aspect;
+    const threeJs = document.getElementById('threeJs');
+    const whiteMat = new THREE.MeshLambertMaterial({color: 0xF4F5F5});
+    const blackMat = new THREE.MeshLambertMaterial({color: 0x434343});
+    // const pinkMat = new THREE.MeshLambertMaterial({color: 0xeda5ba});
+    const brownMat = new THREE.MeshLambertMaterial({color: 0xC4AD83});
+    const deepBrownMat = new THREE.MeshLambertMaterial({color: 0x8C7051});
+    const grayMat = new THREE.MeshLambertMaterial({color: 0x576066});
+    // const blueMat = new THREE.MeshLambertMaterial({color: 0x2A3D45});
+    const greenMat = new THREE.MeshLambertMaterial({color: 0x84DD63});
+    const deepGreenMat = new THREE.MeshLambertMaterial({color: 0x5B9279});
+    const silverMat = new THREE.MeshPhysicalMaterial({color: 0xAAAAAA});
+    const glassMat = new THREE.MeshPhongMaterial({color: 0xF4F5F5});
+    glassMat.transparent = true;
+    glassMat.opacity = .2;
+    let texture1 = new THREE.TextureLoader().load("./woodMat04.jpg");
+    // texture1.wrapS = texture1.wrapT = THREE.RepeatWrapping;
+    // texture1.repeat.set(1, 3);
+    let woodMat1 = new THREE.MeshLambertMaterial({ map: texture1 });
+    let texture2 = new THREE.TextureLoader().load("./woodMat02.svg");
+    let woodMat2 = new THREE.MeshLambertMaterial({ map: texture2 });
+    let texture3 = new THREE.TextureLoader().load("./wallMat.jpg");
+    texture3.wrapS = texture3.wrapT = THREE.RepeatWrapping;
+    texture3.repeat.set(3, 2);
+    let wallMat = new THREE.MeshLambertMaterial({ map: texture3 });
+    let texture4 = new THREE.TextureLoader().load("./woodMat03.jpg");
+    texture4.wrapS = texture4.wrapT = THREE.RepeatWrapping;
+    texture4.repeat.set(1, 2);
+    let woodMat3 = new THREE.MeshLambertMaterial({ map: texture4 });
+    const floorCM = new CANNON.Material();
+    const objCM = new CANNON.Material();
 
-    let renderer = new THREE.WebGLRenderer({
-      antialias: true
-    });
-    renderer.setSize(innerWidth, innerHeight);
-    renderer.setClearColor(0xdddddd, 1);
-    document.body.appendChild(renderer.domElement);
-
-    let camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, .1, 1000);
-    camera.position.set(40, 20, 0);
-    camera.lookAt(scene.position);
+    scene = new THREE.Scene();
+    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setSize(width, height);
+    renderer.setClearColor(0x87CEEB, 1);
+    renderer.shadowMap.enabled = true;
+    threeJs.appendChild(renderer.domElement);
+    camera = new THREE.PerspectiveCamera(50, aspect, 1, 1000);
+    camera.position.set(0, 80, 90);
+    camera.lookAt(new THREE.Vector3(0, 60, 0));
     cameraControl = new THREE.OrbitControls(camera, renderer.domElement);
 
-    let ambientLight = new THREE.AmbientLight(0xfcd77e);
-    let spotLight = new THREE.SpotLight(0xfff0cd, 1.5, 200, 1.05, 1, 1);
-    spotLight.position.set(0, 100, 0);
-    let directionalLight = new THREE.DirectionalLight(0xfff0cd, .7);
-    directionalLight.position.set(50, 0, 0);
-    scene.add(ambientLight, spotLight, directionalLight);
+    function handleWindowResize() {
+      width = innerWidth;
+      height = innerHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', handleWindowResize);
 
-    let axes = new THREE.AxesHelper(20);
-    scene.add(axes);
+    const globalLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 1);
+    const shadowLight = new THREE.SpotLight(0xffffff, .1);
+    const leftLight = new THREE.DirectionalLight(0xffffff, .2);
+    leftLight.position.set(-80, 20, 0);
+    shadowLight.position.set(-50, 40, 40);
+    shadowLight.castShadow = true;
+    // shadowLight.shadowMapWidth = shadowLight.shadowMapHeight = 768;
+    scene.add(globalLight, shadowLight, leftLight);
 
+    var shadowLightHelper = new THREE.SpotLightHelper(shadowLight, 5 );
+    var leftLightHelper = new THREE.DirectionalLightHelper(leftLight, 5 );
+    // scene.add(shadowLightHelper,leftLightHelper );
+    
+    //model
+    const floor = new Floor(120, 100); 
+    scene.add(floor.floor);
+    world.add(floor.floorBody);
+    const wallWindow1 = new WallWindow(10, 20, .5, -60, 45);
+    const wallWindow2 = new WallWindow(10, 20, .5, -60, 35.5);
+    const wallWindow3 = new WallWindow(10, 20, .5, -60, 26);
+    const wallWindow4 = new WallWindow(10, 20, .5, -60, 16.5);
+    const wallWindow5 = new WallWindow(70, 20, 0, -25, -50);
+    const wallWindow6 = new WallWindow(20, 20, .5, 60, -25);
+    const wallWindow7 = new WallWindow(50, 20, 0, 35, 2.5);
+    const wallWindow8 = new WallWindow(30, 20, .5, -5, 35);
+    scene.add(
+      wallWindow1.wallWindow, 
+      wallWindow2.wallWindow, 
+      wallWindow3.wallWindow, 
+      wallWindow4.wallWindow,
+      wallWindow5.wallWindow,
+      wallWindow6.wallWindow,
+      wallWindow7.wallWindow,
+      wallWindow8.wallWindow
+    );
+    world.add(wallWindow1.windowBody);
+    const wall1 = new Wall(62.5, -.5, -60, -18.5);
+    const wall2 = new Wall(50, 0, 35, -50);
+    const wall3 = new Wall(15, -.5, 60, -42.5);
+    const wall4 = new Wall(65, -.5, 60, 17.5);
+    const wall5 = new Wall(5, -.5, 10, 2.5, 5);
+    const wall6 = new Wall(30, -.5, 35, 35);
+    scene.add(wall1.wall, wall2.wall, wall3.wall, wall4.wall, wall5.wall, wall6.wall);
+    world.add(wall1.wallBody);
+    const floorWindow1 = new FloorWindow(10, 20, .5, 10, -45);
+    const floorWindow2 = new FloorWindow(10, 20, .5, 10, -35);
+    const floorWindow3 = new FloorWindow(10, 20, .5, 10, -15);
+    const floorWindow4 = new FloorWindow(10, 20, .5, 10, -5);
+    scene.add(
+      floorWindow1.floorWindow,
+      floorWindow2.floorWindow,
+      floorWindow3.floorWindow,
+      floorWindow4.floorWindow,
+    );
+    world.add(floorWindow1.windowBody);
+    const door = new Door(8, 17, .3, 12.5, -33);
+    scene.add(door.door);
+    world.add(door.doorBody);
+    const officeDesk1 = new OfficeDesk(25, 10, 10, -1, -30, -30);
+    const officeDesk2 = new OfficeDesk(20, 12.5, 10, -.5, -36.25, -15);
+    const officeDesk3 = new OfficeDesk(20, 12.5, 10, .5, -23.75, -15);
+    scene.add(officeDesk1.desk, officeDesk2.desk, officeDesk3.desk);
+    world.add(officeDesk1.deskBody);
+    const teaDesk1 = new TeaDesk(8, 8, -45, 35);
+    const teaDesk2 = new TeaDesk(8, 8, -20, 35);
+    scene.add(teaDesk1.desk, teaDesk2.desk);
+    world.add(teaDesk1.deskBody);
+    const meetingDesk1 = new MeetingDesk(15, 10, 30, 0, 40, -20, woodMat2);
+    const meetingDesk2 = new MeetingDesk(10, 8, 30, .5, 15, 35, woodMat3);
+    scene.add(meetingDesk1.desk, meetingDesk2.desk);
+    world.add(meetingDesk1.deskBody)
+    const plant1 = new Plant(5, 55, 7, greenMat);
+    const plant2 = new Plant(10, -55, -45, deepGreenMat, 3.5);
+    scene.add(plant1.plant, plant2.plant);
+    world.add(plant1.plantBody);
+    const bookcase = new Bookcase(20, 20, 0, 30, -48.5);
+    scene.add(bookcase.bookcase);
+    world.add(bookcase.bookcaseBody);
+    const forcer = new Forcer(15, 8, -.5, 56, 35);
+    scene.add(forcer.forcer);
+    world.add(forcer.forcerBody);
+    const photo1 = new Photo(10, 10, 0, 50, 15, -49, './photo_01.jpg');
+    const photo2 = new Photo(15, 10, -.5, 34, 15, 35, './photo_02.jpg');
+    scene.add(photo1.photo, photo2.photo);
+    world.add(photo1.photoBody);
+
+    //debug
+    let cannonDebugRenderer = new THREE.CannonDebugRenderer(scene, world)
     function initStats() {
       let stats = new Stats();
       stats.setMode(0);
@@ -65,232 +184,18 @@
     }
     let statsUI = initStats();
 
-    class User {
-      constructor(x, z) {
-        this.x = x;
-        this.z = z;
-        let handMap = new THREE.TextureLoader().load('./skin/handskin.png');
-        let skinMap = new THREE.TextureLoader().load('./skin/bodyskin.png');
-        let headMap = new THREE.TextureLoader().load('./skin/headskin.png');
-        let handMat = new THREE.MeshStandardMaterial({
-          roughness: 1,
-          metalness: .1,
-          transparent: false,
-          opacity: 1,
-          side: THREE.DoubleSide,
-          map: handMap
-        })
-        let skinMat = new THREE.MeshStandardMaterial({
-          roughness: 1,
-          metalness: .1,
-          transparent: false,
-          opacity: 1,
-          side: THREE.DoubleSide,
-          map: skinMap
-        })
-        let headMat = [];
-        for (let i = 0; i < 6; i++) {
-          let map;
-          if (i === 0) map = headMap;
-          else map = skinMap;
-          headMat.push(new THREE.MeshStandardMaterial({
-            map
-          }))
-        }
+    function render(){
+      world.step(timeStep);
 
-        let headGeo = new THREE.BoxGeometry(1, 1, 1);
-        let bodyGeo = new THREE.BoxGeometry(1.1, 2, 1.1);
-        let footGeo = new THREE.BoxGeometry(.4, 1, .4);
-        this.userHead = new THREE.Mesh(headGeo, headMat);
-        this.userBody = new THREE.Mesh(bodyGeo, skinMat);
-        this.userHand1 = new THREE.Mesh(footGeo, handMat);
-        this.userHand2 = this.userHand1.clone();
-        this.userHead.position.set(0, 2.5, 0);
-        this.userBody.position.set(0, 1, 0);
-        this.userHand1.position.set(0, 1.5, -.7);
-        this.userHand2.position.set(0, 1.5, .7);
-
-        this.userHand = new THREE.Group();
-        this.userHand.add(this.userHand1, this.userHand2);
-        this.user = new THREE.Group();
-        this.user.add(this.userHead, this.userBody, this.userHand);
-        if (this.x && this.z) this.user.position.set(this.x, 0, this.z);
-      }
-    }
-    let user = new User();
-    let npc = new User(10, 10);
-    scene.add(user.user, npc.user);
-
-    class Desk {
-      constructor(x, z, w, h, l) {
-        this.x = x;
-        this.z = z;
-        this.w = w;
-        this.h = h;
-        this.l = l;
-        let deskMat = [];
-        let deskMapTp = new THREE.TextureLoader().load('./desk.png');
-        let deskMapFt = new THREE.TextureLoader().load('./desk01.png');
-        let deskMap = new THREE.TextureLoader().load('./desk02.png');
-        for (let i = 0; i < 6; i++) {
-          let map;
-          switch (i) {
-            case 0:
-              map = deskMapFt;
-              break;
-            case 2:
-              map = deskMapTp;
-              break;
-            default:
-              map = deskMap;
-          }
-          deskMat.push(new THREE.MeshBasicMaterial({
-            map
-          }));
-        }
-        let deskGeo = new THREE.BoxGeometry(this.w, this.h, this.l);
-        this.desk = new THREE.Mesh(deskGeo, deskMat);
-        this.desk.position.set(this.x, this.h / 2, this.z);
-      }
-    }
-    let desk = new Desk(15, 10, 5, 2.5, 10);
-    let desk2 = new Desk(15, -10, 5, 2.5, 10);
-    scene.add(desk.desk, desk2.desk);
-
-    class BackgroundBox {
-      constructor(w, h, l) {
-        this.w = w;
-        this.h = h;
-        this.l = l;
-        let materialBox = [];
-        let materialMap = [
-          new THREE.TextureLoader().load('./background/Daylight_Box_Front.bmp'),
-          new THREE.TextureLoader().load('./background/Daylight_Box_Back.jpg'),
-          new THREE.TextureLoader().load('./background/Daylight_Box_Top.bmp'),
-          new THREE.TextureLoader().load('./background/Daylight_Box_Bottom.jpg'),
-          new THREE.TextureLoader().load('./background/Daylight_Box_Right.jpg'),
-          new THREE.TextureLoader().load('./background/Daylight_Box_Left.jpg')
-        ]
-        for (let i = 0; i < 6; i++) {
-          materialBox.push(new THREE.MeshBasicMaterial({
-            map: materialMap[i]
-          }));
-          materialBox[i].side = THREE.BackSide
-        }
-
-        let boxGeo = new THREE.BoxGeometry(this.w, this.h, this.l);
-        this.box = new THREE.Mesh(boxGeo, materialBox);
-        this.box.position.set(0, this.h / 2, 0)
-      }
-    }
-    let box = new BackgroundBox(40, 15, 40);
-    scene.add(box.box);
-
-
-    let loader = new THREE.GLTFLoader();
-    THREE.DRACOLoader.setDecoderPath('./libs/DRACOLoader.js');
-    class OfficeTable {
-      constructor(x, z, rotate = 0) {
-        this.x = x;
-        this.z = z;
-        this.rotate = rotate;
-        this.table = new THREE.Group();
-        loader.setDRACOLoader(new THREE.DRACOLoader())
-        loader.load('./model/chair.glb', (gltf) => {
-          gltf.scene.position.set(1.9, 0, -3);
-          this.table.add(gltf.scene)
-        })
-        loader.load('./model/table2.glb', (gltf) => {
-          gltf.scene.rotation.y = 3.15;
-          this.table.add(gltf.scene)
-        });
-        loader.load('./model/laptop.glb', (gltf) => {
-          gltf.scene.position.set(3, 4.3, 0);
-          this.table.add(gltf.scene)
-        });
-        this.table.position.set(this.x, 0, this.z);
-        this.table.rotation.y = this.rotate;
-      }
-    }
-    let table = new OfficeTable(-5, -15, -3.1);
-    scene.add(table.table);
-
-
-
-    //操作
-    let rotateHandOffset = 0;
-    let positionX = 0;
-    let positionZ = 0;
-
-    function handRotate({
-      userHand
-    }) {
-      rotateHandOffset += 0.1;
-      userHand.rotation.y = Math.sin(rotateHandOffset) / 4;
-    }
-
-    function controlUser(e) {
-      if (e.key === 'w') {
-        positionX -= .5;
-        user.user.position.x = positionX;
-        user.user.rotation.y = 3.1;
-      }
-      if (e.key === 's') {
-        positionX += .5;
-        user.user.position.x = positionX;
-        user.user.rotation.y = 0;
-      }
-      if (e.key === 'd') {
-        positionZ -= .5;
-        user.user.position.z = positionZ;
-        user.user.rotation.y = 1.5;
-      }
-      if (e.key === 'a') {
-        positionZ += .5;
-        user.user.position.z = positionZ;
-        user.user.rotation.y = 4.7;
-      }
-      positionZ > 19 ? positionZ = 19 : positionZ < -19 ? positionZ = -19 : positionZ;
-      positionX > 19 ? positionX = 19 : positionX < -19 ? positionX = -19 : positionX;
-      handRotate(user);
-      console.log('Z:' + positionZ, 'X:' + positionX)
-    }
-
-    function controlNpc(x, z, speed) {
-      let npcPositionZ = z;
-      let npcPositionX = x;
-      let dx = speed;
-      let dz = speed;
-      let direction = true;
-      setInterval(() => {
-        direction = !direction
-      }, 5000)
-      return (limitX1, limitX2, limitZ1, limitZ2) => {
-        if (direction) {
-          npcPositionZ += dz;
-          npc.user.position.z = npcPositionZ;
-          dz > 0 ? npc.user.rotation.y = 4.7 : npc.user.rotation.y = 1.5;
-        } else {
-          npcPositionX += dx;
-          npc.user.position.x = npcPositionX;
-          dx > 0 ? npc.user.rotation.y = 0 : npc.user.rotation.y = 3.1;
-        }
-        if (npcPositionX > limitX1 || npcPositionX < limitX2) dx *= -1;
-        if (npcPositionZ > limitZ1 || npcPositionZ < limitZ2) dz *= -1;
-        handRotate(npc)
-      }
-    }
-    let npcMode1 = controlNpc(npc.user.position.x, npc.user.position.z, .03);
-
-    function render() {
       requestAnimationFrame(render);
+      cameraControl.update();
       renderer.render(scene, camera);
+      
       statsUI.update();
-      window.addEventListener('keydown', controlUser);
-      npcMode1(10, 0, 19, 6);
+      cannonDebugRenderer.update() // Update the debug renderer
     }
-    render()
+    handleWindowResize();
+    render();
   </script>
 </body>
-
 </html>

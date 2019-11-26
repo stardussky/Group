@@ -1,0 +1,45 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  list-style: none;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat {
+  width: 500px;
+  height: 100vh;
+  &_room {
+    width: 100%;
+    height: 80%;
+    overflow: auto;
+    > li {
+      display: flex;
+      &.self {
+        color: orange;
+        justify-content: flex-end;
+      }
+      &.system {
+        color: gray;
+        justify-content: center;
+      }
+    }
+  }
+  &_input {
+    width: 100%;
+    height: 20%;
+    > label {
+      display: inline-block;
+      width: 15%;
+      vertical-align: top;
+    }
+    > textarea {
+      width: 80%;
+    }
+  }
+}
