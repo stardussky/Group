@@ -12,7 +12,7 @@ class Floor {
     this.w = w;
     this.h = h;
     let floorGeo = new THREE.PlaneGeometry(this.w, this.h);
-    let floorTexture = new THREE.TextureLoader().load("./floorMat2.jpg");
+    let floorTexture = textureLoader.load("./floorMat2.jpg");
     floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
     floorTexture.repeat.set(1, 1);
     let floorMat = new THREE.MeshLambertMaterial({
@@ -88,13 +88,13 @@ class FloorWindow {
     this.x = x;
     this.z = z;
     this.floorWindow = new THREE.Group();
-    let part1Geo = new THREE.BoxGeometry(this.w, .5, .5);
+    let part1Geo = new THREE.BoxGeometry(this.w, 0.5, 0.5);
     let part1 = new THREE.Mesh(part1Geo, silverMat);
-    let part2Geo = new THREE.BoxGeometry(.5, this.h, .5);
+    let part2Geo = new THREE.BoxGeometry(0.5, this.h, 0.5);
     let part2 = new THREE.Mesh(part2Geo, silverMat);
     let part3 = part1.clone();
     let part4 = part2.clone();
-    let part5Geo = new THREE.BoxGeometry(this.w, this.h, .25);
+    let part5Geo = new THREE.BoxGeometry(this.w, this.h, 0.25);
     let part5 = new THREE.Mesh(part5Geo, glassMat);
     part1.position.y = this.h / 2;
     part2.position.x = this.w / 2;
@@ -103,13 +103,13 @@ class FloorWindow {
     this.floorWindow.add(part1, part2, part3, part4, part5);
 
     let windowSharp = new CANNON.Box(
-      new CANNON.Vec3(this.w / 2, this.h / 2, .5)
-    )
+      new CANNON.Vec3(this.w / 2, this.h / 2, 0.5)
+    );
     this.windowBody = new CANNON.Body({
       mass: 0,
       position: new CANNON.Vec3(this.x, this.h / 2, this.z),
       material: objCM
-    })
+    });
     this.windowBody.addShape(windowSharp);
     this.windowBody.quaternion.setFromAxisAngle(
       new CANNON.Vec3(0, 1, 0),
@@ -117,7 +117,6 @@ class FloorWindow {
     );
     this.floorWindow.quaternion.copy(this.windowBody.quaternion);
     this.floorWindow.position.copy(this.windowBody.position);
-
 
     addShadow(this.floorWindow);
   }
@@ -219,7 +218,7 @@ class TeaDesk {
 }
 
 class MeetingDesk {
-  constructor(w, h, l, r, x, z, mat){
+  constructor(w, h, l, r, x, z, mat) {
     this.w = w;
     this.h = h;
     this.l = l;
@@ -230,28 +229,28 @@ class MeetingDesk {
     this.desk = new THREE.Group();
     let part1Geo = new THREE.BoxGeometry(this.w, 1, this.l);
     let part1 = new THREE.Mesh(part1Geo, this.mat);
-    let part2Geo = new THREE.CylinderGeometry(.5, .5, this.h, 30);
+    let part2Geo = new THREE.CylinderGeometry(0.5, 0.5, this.h, 30);
     let part2 = new THREE.Mesh(part2Geo, silverMat);
-    let part3Geo = new THREE.BoxGeometry(this.l/1.5, .5, 1);
+    let part3Geo = new THREE.BoxGeometry(this.l / 1.5, 0.5, 1);
     let part3 = new THREE.Mesh(part3Geo, whiteSilverMat);
-    part3.rotation.y = Math.PI * .5;
+    part3.rotation.y = Math.PI * 0.5;
     let part4 = part2.clone();
     let part5 = part3.clone();
-    part1.position.y = this.h/2;
-    part2.position.x = this.w/2.5;
-    part4.position.x = -this.w/2.5;
-    part3.position.set(this.w/2.5, -this.h/2, 0);
-    part5.position.set(-this.w/2.5, -this.h/2, 0);
+    part1.position.y = this.h / 2;
+    part2.position.x = this.w / 2.5;
+    part4.position.x = -this.w / 2.5;
+    part3.position.set(this.w / 2.5, -this.h / 2, 0);
+    part5.position.set(-this.w / 2.5, -this.h / 2, 0);
     this.desk.add(part1, part2, part3, part4, part5);
 
     let deskShape = new CANNON.Box(
-      new CANNON.Vec3(this.w/2, this.h/2, this.l/2)
-    )
+      new CANNON.Vec3(this.w / 2, this.h / 2, this.l / 2)
+    );
     this.deskBody = new CANNON.Body({
       mass: 0,
-      position: new CANNON.Vec3(this.x, this.h/2, this.z),
+      position: new CANNON.Vec3(this.x, this.h / 2, this.z),
       material: objCM
-    })
+    });
     this.deskBody.addShape(deskShape);
     this.deskBody.quaternion.setFromAxisAngle(
       new CANNON.Vec3(0, 1, 0),
@@ -272,7 +271,7 @@ class Wall {
     this.textureX = textureX;
     this.textureY = textureY;
     this.wall = new THREE.Group();
-    let wallTexture = new THREE.TextureLoader().load("./wallMat1.jpg");
+    let wallTexture = textureLoader.load("./wallMat.jpg");
     wallTexture.wrapS = wallTexture.wrapT = THREE.RepeatWrapping;
     wallTexture.repeat.set(this.textureX, this.textureY);
     let wallMat = new THREE.MeshLambertMaterial({ map: wallTexture });
@@ -315,14 +314,24 @@ class Plant {
     part3.position.set(1, 0, -1);
     part4.position.set(2, 0, 0);
     part5.position.set(1, 1, 0);
-    let part6Geo = new THREE.CylinderGeometry(this.leaf*.3, this.leaf*.3, this.h, 30);
+    let part6Geo = new THREE.CylinderGeometry(
+      this.leaf * 0.3,
+      this.leaf * 0.3,
+      this.h,
+      30
+    );
     let part6 = new THREE.Mesh(part6Geo, brownMat);
     part6.position.set(1, -this.h / 2, 0);
-    let part7Geo = new THREE.CylinderGeometry(this.leaf, this.leaf/1.5, this.leaf, 30);
+    let part7Geo = new THREE.CylinderGeometry(
+      this.leaf,
+      this.leaf / 1.5,
+      this.leaf,
+      30
+    );
     let part7 = new THREE.Mesh(part7Geo, deepBrownMat);
     part7.position.set(1, -this.h + 0.5, 0);
     this.plant.add(part1, part2, part3, part4, part5, part6, part7);
-    this.plant.position.set(this.x, this.h+this.leaf/3, this.z);
+    this.plant.position.set(this.x, this.h + this.leaf / 3, this.z);
 
     let plantShape = new CANNON.Box(
       new CANNON.Vec3(this.leaf, this.h / 2 + 1.25, this.leaf)
@@ -363,19 +372,19 @@ class Bookcase {
     let parts = [];
     for (let i = 1; i < (this.h / 5).toFixed(0); i++) {
       let part = part2.clone();
-      part.position.set(0, -this.h / 2 + i * 5, 0)
+      part.position.set(0, -this.h / 2 + i * 5, 0);
       parts.push(part);
     }
     this.bookcase.add(part1, part2, part3, part4, part5, ...parts);
 
     let bookcaseShape = new CANNON.Box(
       new CANNON.Vec3(this.w / 2, this.h / 2, 2.5)
-    )
+    );
     this.bookcaseBody = new CANNON.Body({
       mass: 0,
       position: new CANNON.Vec3(this.x, this.h / 2, this.z + 2.5 - 0.125),
       material: objCM
-    })
+    });
     this.bookcaseBody.addShape(bookcaseShape);
     this.bookcaseBody.quaternion.setFromAxisAngle(
       new CANNON.Vec3(0, 1, 0),
@@ -398,10 +407,10 @@ class Forcer {
 
     let part1Geo = new THREE.BoxGeometry(this.w, this.h, 5);
     let part1 = new THREE.Mesh(part1Geo, woodMat3);
-    let part2Geo = new THREE.BoxGeometry(this.w + .5, .25, 5.5);
+    let part2Geo = new THREE.BoxGeometry(this.w + 0.5, 0.25, 5.5);
     let part2 = new THREE.Mesh(part2Geo, silverMat);
     part2.position.y = this.h / 2;
-    let part3Geo = new THREE.BoxGeometry(1, .125, .25);
+    let part3Geo = new THREE.BoxGeometry(1, 0.125, 0.25);
     let part3 = new THREE.Mesh(part3Geo, whiteSilverMat);
     let part4 = part3.clone();
     let part5 = part3.clone();
@@ -414,12 +423,12 @@ class Forcer {
 
     let forcerShape = new CANNON.Box(
       new CANNON.Vec3(this.w / 2, this.h / 2, 2.5)
-    )
+    );
     this.forcerBody = new CANNON.Body({
       mass: 0,
       position: new CANNON.Vec3(this.x, this.h / 2, this.z),
       material: objCM
-    })
+    });
     this.forcerBody.addShape(forcerShape);
     this.forcerBody.quaternion.setFromAxisAngle(
       new CANNON.Vec3(0, 1, 0),
@@ -439,24 +448,24 @@ class Door {
     this.x = x;
     this.z = z;
     this.door = new THREE.Group();
-    let part1Geo = new THREE.BoxGeometry(this.w, this.h, .25);
+    let part1Geo = new THREE.BoxGeometry(this.w, this.h, 0.25);
     let part1 = new THREE.Mesh(part1Geo, whiteSilverMat);
-    let part2Geo = new THREE.CylinderGeometry(.5, .5, 0.125, 30);
+    let part2Geo = new THREE.CylinderGeometry(0.5, 0.5, 0.125, 30);
     let part2 = new THREE.Mesh(part2Geo, silverMat);
-    let part3Geo = new THREE.BoxGeometry(1.5, .25, 0.25);
+    let part3Geo = new THREE.BoxGeometry(1.5, 0.25, 0.25);
     let part3 = new THREE.Mesh(part3Geo, silverMat);
-    let part4Geo = new THREE.CylinderGeometry(.25, .25, 0.125, 30);
+    let part4Geo = new THREE.CylinderGeometry(0.25, 0.25, 0.125, 30);
     let part4 = new THREE.Mesh(part4Geo, silverMat);
-    part2.rotation.x = Math.PI * .5;
-    part4.rotation.x = Math.PI * .5;
-    part2.position.set(this.w / 2.5, 0, .125);
-    part3.position.set(this.w / 2.5 - .5, 0, .25);
-    part4.position.set(this.w / 2.5, -.75, .25);
+    part2.rotation.x = Math.PI * 0.5;
+    part4.rotation.x = Math.PI * 0.5;
+    part2.position.set(this.w / 2.5, 0, 0.125);
+    part3.position.set(this.w / 2.5 - 0.5, 0, 0.25);
+    part4.position.set(this.w / 2.5, -0.75, 0.25);
     this.door.add(part1, part2, part3, part4);
 
     let doorShape = new CANNON.Box(
-      new CANNON.Vec3(this.w / 2, this.h / 2, .125)
-    )
+      new CANNON.Vec3(this.w / 2, this.h / 2, 0.125)
+    );
     this.doorBody = new CANNON.Body({
       mass: 0,
       position: new CANNON.Vec3(this.x, this.h / 2, this.z),
@@ -483,26 +492,26 @@ class Photo {
     this.z = z;
     this.picture = picture;
     this.photo = new THREE.Group();
-    let texture = new THREE.TextureLoader().load(this.picture);
-    let pictureMat = new THREE.MeshLambertMaterial({map: texture});
-    let part1Geo = new THREE.BoxGeometry(this.w, this.h, .25);
+    let texture = textureLoader.load(this.picture);
+    let pictureMat = new THREE.MeshLambertMaterial({ map: texture });
+    let part1Geo = new THREE.BoxGeometry(this.w, this.h, 0.25);
     let part1 = new THREE.Mesh(part1Geo, blackMat);
-    let part2Geo = new THREE.BoxGeometry(this.w-.5, this.h-.5, .25);
+    let part2Geo = new THREE.BoxGeometry(this.w - 0.5, this.h - 0.5, 0.25);
     let part2 = new THREE.Mesh(part2Geo, whiteMat);
-    let part3Geo = new THREE.BoxGeometry(this.w-1, this.h-1, .25);
+    let part3Geo = new THREE.BoxGeometry(this.w - 1, this.h - 1, 0.25);
     let part3 = new THREE.Mesh(part3Geo, pictureMat);
-    part2.position.z = .01;
-    part3.position.z = .02;
+    part2.position.z = 0.01;
+    part3.position.z = 0.02;
     this.photo.add(part1, part2, part3);
 
     let photoSharp = new CANNON.Box(
-      new CANNON.Vec3(this.w/2, this.h/2, .125)
-    )
+      new CANNON.Vec3(this.w / 2, this.h / 2, 0.125)
+    );
     this.photoBody = new CANNON.Body({
       mass: 0,
       position: new CANNON.Vec3(this.x, this.y, this.z),
       material: objCM
-    })
+    });
     this.photoBody.addShape(photoSharp);
     this.photoBody.quaternion.setFromAxisAngle(
       new CANNON.Vec3(0, 1, 0),
@@ -514,36 +523,90 @@ class Photo {
   }
 }
 
-class Computer{
-  constructor(r, x, y, z){
+class Computer {
+  constructor(r, x, y, z) {
     this.r = r;
     this.x = x;
     this.y = y;
     this.z = z;
     this.computer = new THREE.Group();
-    let part1Geo = new THREE.BoxGeometry(5, 4, .25);
+    let part1Geo = new THREE.BoxGeometry(5, 4, 0.25);
     let part1 = new THREE.Mesh(part1Geo, blackMat);
-    let part2Geo = new THREE.BoxGeometry(1, 2.5, .25);
+    let part2Geo = new THREE.BoxGeometry(1, 2.5, 0.25);
     let part2 = new THREE.Mesh(part2Geo, blackMat);
-    let part3Geo = new THREE.CylinderGeometry(1, 1, .125, 30);
+    let part3Geo = new THREE.CylinderGeometry(1, 1, 0.125, 30);
     let part3 = new THREE.Mesh(part3Geo, blackMat);
-    let part4Geo = new THREE.BoxGeometry(4, 2, .125);
+    let part4Geo = new THREE.BoxGeometry(4, 2, 0.125);
     let part4 = new THREE.Mesh(part4Geo, blackMat);
-    let part5Geo = new THREE.BoxGeometry(1.5, 1.5, .01);
+    let part5Geo = new THREE.BoxGeometry(1.5, 1.5, 0.01);
     let part5 = new THREE.Mesh(part5Geo, whiteMat);
-    let part6Geo = new THREE.BoxGeometry(.35, .125, .5);
+    let part6Geo = new THREE.BoxGeometry(0.35, 0.125, 0.5);
     let part6 = new THREE.Mesh(part6Geo, blackMat);
-    part1.rotation.x = Math.PI * -.1;
+    part1.rotation.x = Math.PI * -0.1;
     part2.position.y = -1.75;
-    part2.rotation.x = Math.PI * .05;
+    part2.rotation.x = Math.PI * 0.05;
     part3.position.y = -3;
-    part4.rotation.x = Math.PI * .5;
+    part4.rotation.x = Math.PI * 0.5;
     part4.position.set(0, -3, 2.5);
-    part5.rotation.x = Math.PI * .5;
+    part5.rotation.x = Math.PI * 0.5;
     part5.position.set(3.5, -3, 3);
     part6.position.set(3.25, -2.925, 3);
     this.computer.add(part1, part2, part3, part4, part5, part6);
     this.computer.position.set(this.x, this.y, this.z);
     this.computer.rotation.y = Math.PI * this.r;
+  }
+}
+
+class Chair {
+  constructor(x, z, r) {
+    this.x = x;
+    this.z = z;
+    this.r = r;
+    this.chair = new THREE.Group();
+    new THREE.MTLLoader().load("./model_obj/chair/chair.mtl", mtl => {
+      mtl.preload();
+      new THREE.OBJLoader()
+        .setMaterials(mtl)
+        .load("./model_obj/chair/chair.obj", obj => {
+          this.chair.add(obj);
+        });
+    });
+    this.chair.position.set(this.x, 0, this.z);
+
+    let chairShape = new CANNON.Box(new CANNON.Vec3(4, 6.5, 4));
+    this.chairBody = new CANNON.Body({
+      mass: 0,
+      position: new CANNON.Vec3(this.x, 6.5, this.z),
+      material: objCM
+    });
+    this.chairBody.addShape(chairShape);
+    this.chairBody.quaternion.setFromAxisAngle(
+      new CANNON.Vec3(0, 1, 0),
+      Math.PI * this.r
+    );
+    this.chair.quaternion.copy(this.chairBody.quaternion);
+    addShadow(this.chair);
+  }
+}
+
+class SmallThing{
+  constructor(url, r, x, y, z){
+    this.url = url;
+    this.r = r;
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.thing = new THREE.Group();
+    new THREE.MTLLoader().load(`./model_obj/${this.url}.mtl`, mtl => {
+      mtl.preload();
+      new THREE.OBJLoader()
+        .setMaterials(mtl)
+        .load(`./model_obj/${this.url}.obj`, obj => {
+          this.thing.add(obj);
+        });
+    });
+    this.thing.position.set(this.x, this.y, this.z);
+    this.thing.rotation.x = Math.PI * this.r;
+    addShadow(this.thing);
   }
 }
