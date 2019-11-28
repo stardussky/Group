@@ -43,6 +43,8 @@
     const threeJs = document.getElementById('threeJs');
     //loader
     const textureLoader = new THREE.TextureLoader();
+    let wallTexture = textureLoader.load("./wallMat.jpg");
+    let wallMat = new THREE.MeshLambertMaterial({ map: wallTexture });
     // textureLoader.crossOrigin = '';
     const whiteMat = new THREE.MeshLambertMaterial({color: 0xF4F5F5});
     const blackMat = new THREE.MeshLambertMaterial({color: 0x555555});
@@ -90,100 +92,101 @@
 
     const globalLight = new THREE.HemisphereLight(0xffffff, 0xffffff, .7);
     const insideLight = new THREE.HemisphereLight(0xffffff, 0xffffff, .25);
-    const shadowLight = new THREE.SpotLight(0xffffff, .1);
+    const shadowLight = new THREE.SpotLight(0xffffff, .5);
     insideLight.position.set(-30, 40, 0);
-    shadowLight.position.set(-50, 40, 40);
+    shadowLight.position.set(-60, 40, 50);
     shadowLight.castShadow = true;
     // shadowLight.shadowMapWidth = shadowLight.shadowMapHeight = 768;
     scene.add(globalLight, shadowLight, insideLight);
 
-    // var shadowLightHelper = new THREE.SpotLightHelper(shadowLight, 5 );
-    // var leftLightHelper = new THREE.DirectionalLightHelper(leftLight, 5 );
-    // var insideLightHelper = new THREE.HemisphereLightHelper( insideLight, 5 );
-    // scene.add(insideLightHelper );
+    var shadowLightHelper = new THREE.SpotLightHelper(shadowLight, 5 );
+    var insideLightHelper = new THREE.HemisphereLightHelper( insideLight, 5 );
+    scene.add(insideLightHelper, shadowLightHelper);
     
     //model
-    const floor = new Floor(120, 100); 
-    scene.add(floor.floor);
-    world.add(floor.floorBody);
-    const wallWindow1 = new WallWindow(10, 20, .5, -60, 45);
-    const wallWindow2 = new WallWindow(10, 20, .5, -60, 35.5);
-    const wallWindow3 = new WallWindow(10, 20, .5, -60, 26);
-    const wallWindow4 = new WallWindow(10, 20, .5, -60, 16.5);
-    const wallWindow5 = new WallWindow(70, 20, 0, -25, -50);
-    const wallWindow6 = new WallWindow(20, 20, .5, 60, -25);
-    const wallWindow7 = new WallWindow(50, 20, 0, 35, 2.5);
-    const wallWindow8 = new WallWindow(30, 20, .5, -5, 35);
+    const floor1 = new Floor(120, 100, 0, 0);
+    // const floor1 = new Floor(51.5, 100, -33.5, 0); 
+    // const floor2 = new Floor(67, 50, 25.75, -23.75); 
+    // const floor3 = new Floor(67, 48.75, 25.75, 25.65, 'floorMat1'); 
+    scene.add(floor1.floor);
+    // scene.add(floor1.floor, floor2.floor, floor3.floor);
+    world.add(floor1.floorBody);
+    // world.add(floor2.floorBody);
+    const wallWindow1 = new WallWindow(40, 2.5, 17.5
+    , 2.5, -60, 30, .5, 3);
+    const wallWindow2 = new WallWindow(70, 2.5, 17.5, 2.5, -25, -50, 0);
+    const wallWindow3 = new WallWindow(20, 2.5, 17.5, 2.5, 60, -25, .5);
+    const wallWindow4 = new WallWindow(50, 8, 12, 2.5, 35, 2.5, 0, 1, wallMat);
+    const wallWindow5 = new WallWindow(30, 8, 12, 2.5, -6.5, 35, .5, 1, wallMat);
     scene.add(
-      wallWindow1.wallWindow, 
-      wallWindow2.wallWindow, 
-      wallWindow3.wallWindow, 
-      wallWindow4.wallWindow,
-      wallWindow5.wallWindow,
-      wallWindow6.wallWindow,
-      wallWindow7.wallWindow,
-      wallWindow8.wallWindow
+      wallWindow1.obj, 
+      wallWindow2.obj, 
+      wallWindow3.obj, 
+      wallWindow4.obj,
+      wallWindow5.obj,
     );
-    world.add(wallWindow1.windowBody);
-    const wall1 = new Wall(62.5, -.5, -60, -18.5, 1);
-    const wall2 = new Wall(50, 0, 35, -50, 1);
-    const wall3 = new Wall(15, -.5, 60, -42.5);
-    const wall4 = new Wall(65, -.5, 60, 17.5, 1);
-    const wall5 = new Wall(5, -.5, 10, 2.5, 1, 1, 5);
-    const wall6 = new Wall(30, -.5, 35, 35);
-    scene.add(wall1.wall, wall2.wall, wall3.wall, wall4.wall, wall5.wall, wall6.wall);
+    // world.add(wallWindow1.objBody);
+    const wall1 = new Wall(60, -.5, -60, -20);
+    const wall2 = new Wall(50, 0, 35, -50);
+    const wall3 = new Wall(14, -.5, 60, -42);
+    const wall4 = new Wall(65, -.5, 60, 17.5);
+    // const wall5 = new Wall(5, -.5, 10, 2.5, 1, 1, 5);
+    // const wall6 = new Wall(30, -.5, 35, 35);
+    scene.add(wall1.wall, wall2.wall, wall3.wall, wall4.wall)
+    // scene.add(wall1.wall, wall2.wall, wall3.wall, wall4.wall, wall5.wall, wall6.wall);
     world.add(wall1.wallBody);
-    const floorWindow1 = new FloorWindow(10, 20, .5, 10, -45);
-    const floorWindow2 = new FloorWindow(10, 20, .5, 10, -35);
-    const floorWindow3 = new FloorWindow(10, 20, .5, 10, -15);
-    const floorWindow4 = new FloorWindow(10, 20, .5, 10, -5);
-    scene.add(
-      floorWindow1.floorWindow,
-      floorWindow2.floorWindow,
-      floorWindow3.floorWindow,
-      floorWindow4.floorWindow,
-    );
-    world.add(floorWindow1.windowBody);
-    const door = new Door(8, 20, .3, 12.5, -33);
-    scene.add(door.door);
-    world.add(door.doorBody);
-    const officeDesk1 = new OfficeDesk(25.2, 10, 10, -1, -30, -30.2);
-    const officeDesk2 = new OfficeDesk(20, 12.5, 10, -.5, -36.35, -15);
-    const officeDesk3 = new OfficeDesk(20, 12.5, 10, .5, -23.65, -15);
-    scene.add(officeDesk1.desk, officeDesk2.desk, officeDesk3.desk);
-    world.add(officeDesk1.deskBody);
-    const teaDesk1 = new TeaDesk(8, 8, -45, 35);
-    const teaDesk2 = new TeaDesk(8, 8, -20, 35);
-    scene.add(teaDesk1.desk, teaDesk2.desk);
-    world.add(teaDesk1.deskBody);
-    const meetingDesk1 = new MeetingDesk(30, 8, 15, .5, 40, -20, whiteSilverMat);
-    const meetingDesk2 = new MeetingDesk(30, 8, 12.5, 0, 15, 35, woodMat4);
-    scene.add(meetingDesk1.desk, meetingDesk2.desk);
-    world.add(meetingDesk1.deskBody)
-    const plant1 = new Plant(5, 55, 7, greenMat);
-    const plant2 = new Plant(10, -55, -45, deepGreenMat, 3.5);
-    const plant3 = new SmallThing('tree', 0, 57.5, 8, 30);
-    scene.add(plant1.plant, plant2.plant, plant3.thing);
-    world.add(plant1.plantBody);
-    const bookcase = new Bookcase(20, 20, 0, 30, -48.5);
-    scene.add(bookcase.bookcase);
-    world.add(bookcase.bookcaseBody);
-    const forcer = new Forcer(15, 8, -.5, 56, 35);
-    scene.add(forcer.forcer);
-    world.add(forcer.forcerBody);
-    const photo1 = new Photo(10, 10, 0, 50, 15, -49, './photo_01.jpg');
-    const photo2 = new Photo(15, 10, -.5, 34, 15, 35, './photo_02.jpg');
-    scene.add(photo1.photo, photo2.photo);
-    world.add(photo1.photoBody);
-    const computer1 = new Computer(.4, -25, 13.5, -18);
-    const computer2 = new Computer(-.7, -35, 13.5, -12);
-    const computer3 = new Computer(.9, -33, 13.5, -27);
-    scene.add(computer1.computer, computer2.computer, computer3.computer);
-    const chair1=  new Chair(-15, -13, -1);
-    scene.add(chair1.chair);
-    world.add(chair1.chairBody);
+    // const floorWindow1 = new FloorWindow(10, 20, .5, 10, -45);
+    // const floorWindow2 = new FloorWindow(10, 20, .5, 10, -35);
+    // const floorWindow3 = new FloorWindow(10, 20, .5, 10, -15);
+    // const floorWindow4 = new FloorWindow(10, 20, .5, 10, -5);
+    // scene.add(
+    //   floorWindow1.floorWindow,
+    //   floorWindow2.floorWindow,
+    //   floorWindow3.floorWindow,
+    //   floorWindow4.floorWindow,
+    // );
+    // world.add(floorWindow1.windowBody);
+    // const door = new Door(8, 20, .3, 12.5, -33);
+    // scene.add(door.door);
+    // world.add(door.doorBody);
+    // const officeDesk1 = new OfficeDesk(25.2, 10, 10, -1, -30, -30.2);
+    // const officeDesk2 = new OfficeDesk(20, 12.5, 10, -.5, -36.35, -15);
+    // const officeDesk3 = new OfficeDesk(20, 12.5, 10, .5, -23.65, -15);
+    // scene.add(officeDesk1.desk, officeDesk2.desk, officeDesk3.desk);
+    // world.add(officeDesk1.deskBody);
+    // const teaDesk1 = new TeaDesk(8, 8, -45, 35);
+    // const teaDesk2 = new TeaDesk(8, 8, -20, 35);
+    // scene.add(teaDesk1.desk, teaDesk2.desk);
+    // world.add(teaDesk1.deskBody);
+    // const meetingDesk1 = new MeetingDesk(30, 8, 15, .5, 40, -20, whiteSilverMat);
+    // const meetingDesk2 = new MeetingDesk(30, 8, 12.5, 0, 15, 35, woodMat4);
+    // scene.add(meetingDesk1.desk, meetingDesk2.desk);
+    // world.add(meetingDesk1.deskBody)
+    // const plant1 = new Plant(5, 55, 7, greenMat);
+    // const plant2 = new Plant(10, -55, -45, deepGreenMat, 3.5);
+    // const plant3 = new SmallThing('tree', 0, 57.5, 8, 30);
+    // scene.add(plant1.plant, plant2.plant, plant3.thing);
+    // world.add(plant1.plantBody);
+    // const bookcase = new Bookcase(20, 20, 0, 30, -48.5);
+    // scene.add(bookcase.bookcase);
+    // world.add(bookcase.bookcaseBody);
+    // const forcer = new Forcer(15, 8, -.5, 56, 35);
+    // scene.add(forcer.forcer);
+    // world.add(forcer.forcerBody);
+    // const photo1 = new Photo(10, 10, 0, 50, 15, -49, './photo_01.jpg');
+    // const photo2 = new Photo(15, 10, -.5, 34, 15, 35, './photo_02.jpg');
+    // scene.add(photo1.photo, photo2.photo);
+    // world.add(photo1.photoBody);
+    // const computer1 = new Computer(.4, -25, 13.5, -18);
+    // const computer2 = new Computer(-.7, -35, 13.5, -12);
+    // const computer3 = new Computer(.9, -33, 13.5, -27);
+    // scene.add(computer1.computer, computer2.computer, computer3.computer);
+    // const chair1=  new Chair(-15, -13, -1);
+    // scene.add(chair1.chair);
+    // world.add(chair1.chairBody);
 
     //test
+
 
     //debug
     let cannonDebugRenderer = new THREE.CannonDebugRenderer(scene, world)
