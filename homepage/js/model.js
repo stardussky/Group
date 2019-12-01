@@ -8,16 +8,18 @@ function addShadow(obj) {
 }
 
 class Floor {
-  constructor(w, l, x, z, mat='floorMat2') {
+  constructor(w, l, x, z, mat='floorMat2', repeatX=1, repeatY=1) {
     this.w = w;
     this.l = l;
     this.x = x;
     this.z = z;
     this.mat = mat;
+    this.repeatX = repeatX;
+    this.repeatY = repeatY;
     let floorGeo = new THREE.PlaneGeometry(this.w, this.l);
     let floorTexture = textureLoader.load(`./${this.mat}.jpg`);
-    // floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
-    // floorTexture.repeat.set(3, 1);
+    floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
+    floorTexture.repeat.set(this.repeatX, this.repeatY);
     let floorMat = new THREE.MeshLambertMaterial({
       map: floorTexture
     });
@@ -41,7 +43,7 @@ class Floor {
 }
 
 class WallWindow {
-  constructor(w, h1, h2, l, x, z, r, space = 1, wallMat = whiteSilverMat) {
+  constructor(w, h1, h2, l, x, z, r, space = 1, wallMat = whiteSilverMat, steel=true) {
     this.w = w;
     this.h1 = h1;
     this.h2 = h2;
@@ -51,35 +53,39 @@ class WallWindow {
     this.r = r;
     this.wallMat = wallMat;
     this.space = space;
+    this.isSteel = steel;
     this.obj = new THREE.Group();
     let wallGeo = new THREE.BoxBufferGeometry(this.w, this.h1, this.l);
-    let steelGeo1 = new THREE.BoxGeometry(0.5, this.h2, 0.5);
-    let steelGeo2 = new THREE.BoxGeometry(this.w, 0.5, 0.5);
-    let glassGeo = new THREE.BoxBufferGeometry(this.w, this.h2, 0.125);
-    let steel = new THREE.Geometry();
     let wall = new THREE.Mesh(wallGeo, this.wallMat);
-    let part2 = new THREE.Mesh(steelGeo1);
     wall.position.y = this.h1/2;
-    part2.position.y = this.h1+this.h2/2;
-    part2.position.x = -this.w / 2 + .25;
-    let part4 = new THREE.Mesh(steelGeo2);
-    part4.rotation.x = Math.PI * 0.5;
-    part4.position.y = this.h1+this.h2-.25;
+    let glassGeo = new THREE.BoxBufferGeometry(this.w, this.h2, 0.125);
     let glass = new THREE.Mesh(glassGeo, glassMat);
     glass.position.y = this.h1+this.h2/2;
-    part2.updateMatrix();
-    part4.updateMatrix();
-    steel.merge(part2.geometry, part2.matrix);
-    steel.merge(part4.geometry, part4.matrix);
-    for (let i = 0; i < this.space; i++) {
-      let space = this.w / this.space;
-      let part = part2.clone();
-      part.position.x = -this.w / 2 - 0.25 + space * (i + 1);
-      part.updateMatrix();
-      steel.merge(part.geometry, part.matrix);
+    if(this.isSteel){
+      let steelGeo1 = new THREE.BoxGeometry(0.5, this.h2, 0.5);
+      let steelGeo2 = new THREE.BoxGeometry(this.w, 0.5, 0.5);
+      let steel = new THREE.Geometry();
+      let part1 = new THREE.Mesh(steelGeo1);
+      part1.position.y = this.h1+this.h2/2;
+      part1.position.x = -this.w / 2 + .25;
+      let part2 = new THREE.Mesh(steelGeo2);
+      part2.rotation.x = Math.PI * 0.5;
+      part2.position.y = this.h1+this.h2-.25;
+      part1.updateMatrix();
+      part2.updateMatrix();
+      steel.merge(part1.geometry, part1.matrix);
+      steel.merge(part2.geometry, part2.matrix);
+      for (let i = 0; i < this.space; i++) {
+        let space = this.w / this.space;
+        let part = part1.clone();
+        part.position.x = -this.w / 2 - 0.25 + space * (i + 1);
+        part.updateMatrix();
+        steel.merge(part.geometry, part.matrix);
+      }
+      steel = new THREE.Mesh(steel, silverMat);
+      this.obj.add(steel);
     }
-    steel = new THREE.Mesh(steel, silverMat);
-    this.obj.add(wall, steel, glass);
+    this.obj.add(wall, glass);
     this.obj.position.set(this.x, 0, this.z);
 
     let objShape = new CANNON.Box(
