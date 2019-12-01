@@ -35,15 +35,21 @@
     let scene, renderer, camera, width, height, aspect;
     const threeJs = document.getElementById('threeJs');
     scene = new THREE.Scene();
-    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer = new THREE.WebGLRenderer({
+      antialias: true
+    });
     renderer.setSize(width, height);
     renderer.setClearColor(0x8DCCF1, 1);
-    renderer.shadowMap.enabled = true;
+    // renderer.shadowMap.enabled = true;
     threeJs.appendChild(renderer.domElement);
-    camera = new THREE.PerspectiveCamera(50, aspect, 1, 1000);
-    camera.position.set(0, 80, 90);
-    camera.lookAt(new THREE.Vector3(0, 60, 0));
+    camera = new THREE.PerspectiveCamera(45, aspect, 1, 5000);
+    camera.position.set(0, 200, 400);
     cameraControl = new THREE.OrbitControls(camera, renderer.domElement);
+    cameraControl.enableDamping = true
+    cameraControl.dampingFactor = 0.01
+    cameraControl.minDistance = 50;
+    cameraControl.maxDistance = 250;
+    // scene.fog = new THREE.FogExp2(0x000000, 0.00025)
 
     function handleWindowResize() {
       width = innerWidth;
@@ -54,25 +60,59 @@
     }
     window.addEventListener('resize', handleWindowResize);
 
-    const globalLight = new THREE.AmbientLight (0xffffff, .5);
-    const insideLight = new THREE.HemisphereLight(0xffffff, 0xffffff, .25);
-    const shadowLight = new THREE.SpotLight(0xffffff, .1);
-    insideLight.position.set(-30, 40, 0);
-    shadowLight.position.set(-50, 40, 40);
-    shadowLight.castShadow = true;
-    scene.add(globalLight, shadowLight, insideLight);
+    const globalLight = new THREE.AmbientLight (0x555555);
+    const directionalLight = new THREE.DirectionalLight(0xffeedd);
+    directionalLight.position.set(0, 0, 1);
+    // const insideLight = new THREE.HemisphereLight(0xffffff, 0xffffff, .25);
+    // const shadowLight = new THREE.SpotLight(0xffffff, .1);
+    // insideLight.position.set(-30, 40, 0);
+    // shadowLight.position.set(-50, 40, 40);
+    // shadowLight.castShadow = true;
+    // scene.add(globalLight, directionalLight);
+    var axesHelper = new THREE.AxesHelper( 5 );
+    scene.add( axesHelper );
 
-    const whiteMat = new THREE.MeshLambertMaterial({color: 0xF4F5F5});
-    const blackMat = new THREE.MeshLambertMaterial({color: 0x555555});
+    let textureLoader = new THREE.TextureLoader();
+    function createSkyBox(){
+      const textures = ['mat_ft_1.jpg', 'mat_bk_1.jpg', 'mat_up_1.jpg', 'mat_dn_1.jpg', 'mat_rt_1.jpg', 'mat_lf_1.jpg'];
+      const boxTexture = textures.reduce((prev, mat) => {
+        let texture = new THREE.MeshBasicMaterial({
+          map: textureLoader.load(`./skybox/${mat}`)
+        });
+        texture.side = THREE.BackSide;
+        prev.push(texture)
+        return prev;
+      }, [])
+      const skyBoxGeo = new THREE.BoxGeometry(2500, 2500, 2500);
+      const skyBox = new THREE.Mesh(skyBoxGeo, boxTexture);
+      scene.add(skyBox)
+      // const skyDomeGeo = new THREE.SphereGeometry(500, 25, 25);
+      // const skyDomeTexture = new THREE.MeshBasicMaterial({
+      //   map: textureLoader.load('https://image.shutterstock.com/z/stock-photo--degree-sky-panorama-without-ground-for-easy-use-in-d-graphics-and-d-panorama-use-it-in-your-722286178.jpg')
+      // })
+      // skyDomeTexture.side = THREE.BackSide;
+      // const skyDome = new THREE.Mesh(skyDomeGeo, skyDomeTexture);
+      // scene.add(skyDome)
+    }
+    createSkyBox();
 
-    let boxGeo = new THREE.BoxGeometry(30, 15, 5);
-    let box = new THREE.Mesh(boxGeo, whiteMat);
-    let circleGeo = new THREE.SphereGeometry(15,10,10);
-    box.updateMatrix();
-    circleGeo.merge(box.geometry, box.matrix);
-    let circle = new THREE.Mesh(circleGeo, blackMat)
-    circle.position.set(5, 5, 5);
-    scene.add(circle)
+    function createPoint(pointsNumber){
+      const pointGeo = new THREE.Geometry();
+      const pointMat = new THREE.PointsMaterial({size: 3});
+      const range = 250;
+      for(let i = 0; i<pointsNumber; i++){
+        let x = THREE.Math.randInt(-range, range);
+        let y = THREE.Math.randInt(-range, range);
+        let z = THREE.Math.randInt(-range, range);
+
+        let point = new THREE.Vector3(x, y, z);
+        pointGeo.vertices.push(point);
+      }
+      const points = new THREE.Points(pointGeo, pointMat);
+      scene.add(points);
+    }
+    createPoint(250);
+
 
 
     function initStats() {
@@ -83,11 +123,11 @@
     }
     let statsUI = initStats();
 
-    function render(){
+    function render() {
       requestAnimationFrame(render);
       cameraControl.update();
       renderer.render(scene, camera);
-      
+
       statsUI.update();
     }
     handleWindowResize();
