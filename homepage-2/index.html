@@ -31,6 +31,8 @@
   <script src="../homepage/libs/three.min.js"></script>
   <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
+  <script src="../homepage/libs/OBJLoader.js"></script>
+  <script src="../homepage/libs/MTLLoader.js"></script>
   <script>
     let scene, renderer, camera, width, height, aspect;
     const threeJs = document.getElementById('threeJs');
@@ -43,12 +45,12 @@
     // renderer.shadowMap.enabled = true;
     threeJs.appendChild(renderer.domElement);
     camera = new THREE.PerspectiveCamera(45, aspect, 1, 5000);
-    camera.position.set(0, 200, 400);
+    camera.position.set(0, 250, 400);
     cameraControl = new THREE.OrbitControls(camera, renderer.domElement);
     cameraControl.enableDamping = true
     cameraControl.dampingFactor = 0.01
-    cameraControl.minDistance = 50;
-    cameraControl.maxDistance = 250;
+    cameraControl.minDistance = 250;
+    cameraControl.maxDistance = 400;
     // scene.fog = new THREE.FogExp2(0x000000, 0.00025)
 
     function handleWindowResize() {
@@ -60,21 +62,24 @@
     }
     window.addEventListener('resize', handleWindowResize);
 
-    const globalLight = new THREE.AmbientLight (0x555555);
-    const directionalLight = new THREE.DirectionalLight(0xffeedd);
-    directionalLight.position.set(0, 0, 1);
+    const globalLight = new THREE.AmbientLight(0xffffff, .7);
+    // const directionalLight = new THREE.DirectionalLight(0xffeedd);
+    // directionalLight.position.set(0, 0, 1);
     // const insideLight = new THREE.HemisphereLight(0xffffff, 0xffffff, .25);
-    // const shadowLight = new THREE.SpotLight(0xffffff, .1);
+    const shadowLight = new THREE.DirectionalLight(0xffffff, .2);
     // insideLight.position.set(-30, 40, 0);
-    // shadowLight.position.set(-50, 40, 40);
+    shadowLight.position.set(-200, 250, 0);
     // shadowLight.castShadow = true;
-    // scene.add(globalLight, directionalLight);
-    var axesHelper = new THREE.AxesHelper( 5 );
-    scene.add( axesHelper );
+    scene.add(globalLight, shadowLight);
+    // var spotLightHelper = new THREE.SpotLightHelper(shadowLight);
+    // scene.add(spotLightHelper);
+    var axesHelper = new THREE.AxesHelper(5);
+    scene.add(axesHelper);
 
     let textureLoader = new THREE.TextureLoader();
-    function createSkyBox(){
-      const textures = ['mat_ft_1.jpg', 'mat_bk_1.jpg', 'mat_up_1.jpg', 'mat_dn_1.jpg', 'mat_rt_1.jpg', 'mat_lf_1.jpg'];
+
+    function createSkyBox() {
+      const textures = ['mat_ft.jpg', 'mat_bk.jpg', 'mat_up.jpg', 'mat_dn.jpg', 'mat_rt.jpg', 'mat_lf.jpg'];
       const boxTexture = textures.reduce((prev, mat) => {
         let texture = new THREE.MeshBasicMaterial({
           map: textureLoader.load(`./skybox/${mat}`)
@@ -86,32 +91,57 @@
       const skyBoxGeo = new THREE.BoxGeometry(2500, 2500, 2500);
       const skyBox = new THREE.Mesh(skyBoxGeo, boxTexture);
       scene.add(skyBox)
-      // const skyDomeGeo = new THREE.SphereGeometry(500, 25, 25);
-      // const skyDomeTexture = new THREE.MeshBasicMaterial({
-      //   map: textureLoader.load('https://image.shutterstock.com/z/stock-photo--degree-sky-panorama-without-ground-for-easy-use-in-d-graphics-and-d-panorama-use-it-in-your-722286178.jpg')
-      // })
-      // skyDomeTexture.side = THREE.BackSide;
-      // const skyDome = new THREE.Mesh(skyDomeGeo, skyDomeTexture);
-      // scene.add(skyDome)
     }
     createSkyBox();
 
-    function createPoint(pointsNumber){
+    let points;
+    const fluffy = textureLoader.load('./fluffy.png');
+    function createPoint(pointsNumber) {
       const pointGeo = new THREE.Geometry();
-      const pointMat = new THREE.PointsMaterial({size: 3});
-      const range = 250;
-      for(let i = 0; i<pointsNumber; i++){
+      const pointMat = new THREE.PointsMaterial({
+        size: 5,
+        map: fluffy,
+        transparent: true,
+        blending: THREE.AdditiveBlending,
+        color: 0x00ff00,
+        opacity: .7
+      });
+      const range = 500;
+      for (let i = 0; i < pointsNumber; i++) {
         let x = THREE.Math.randInt(-range, range);
         let y = THREE.Math.randInt(-range, range);
         let z = THREE.Math.randInt(-range, range);
 
         let point = new THREE.Vector3(x, y, z);
+        point.velocityX = THREE.Math.randFloat(-.15, .15);
+        point.velocityZ = THREE.Math.randFloat(-.3, .3);
+
         pointGeo.vertices.push(point);
       }
-      const points = new THREE.Points(pointGeo, pointMat);
+      points = new THREE.Points(pointGeo, pointMat);
       scene.add(points);
     }
-    createPoint(250);
+    createPoint(500);
+    function pointAnimation() {
+      points.geometry.vertices.forEach(v => {
+        v.z = v.z - v.velocityZ;
+        v.x = v.x - v.velocityX;
+
+        if (v.z <= -500 || v.z >= 500) v.velocityZ *= -1;
+        if (v.x <= -500 || v.x >= 500) v.velocityX *= -1;
+      })
+      points.geometry.verticesNeedUpdate = true;
+    }
+    new THREE.MTLLoader().load(`./model1.mtl`, mtl => {
+      mtl.preload();
+      new THREE.OBJLoader()
+        .setMaterials(mtl)
+        .load(`./model1.obj`, obj => {
+          obj.position.set(0, -100, 0);
+          scene.add(obj);
+        });
+    });
+
 
 
 
@@ -124,6 +154,7 @@
     let statsUI = initStats();
 
     function render() {
+      pointAnimation();
       requestAnimationFrame(render);
       cameraControl.update();
       renderer.render(scene, camera);
