@@ -33,7 +33,57 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
   <script src="../homepage/libs/OBJLoader.js"></script>
   <script src="../homepage/libs/MTLLoader.js"></script>
-  <script>
+  <script type="x-shader/x-vertex" id="vertexshader">
+    attribute float size;
+    attribute vec3 position2;
+    uniform float val;
+    varying float opacity;
+    varying vec3 vColor;
+    void main() {
+      float border = -150.0;
+      float min_border = -160.0;
+      float max_opacity = 1.0;
+      float min_opacity = 0.03;
+      float sizeAdd = 20.0;
+
+      vec3 vPos;
+      vPos.x = position.x * val + position2.x * (1. - val);
+      vPos.y = position.y * val + position2.y * (1. - val);
+      vPos.z = position.z * val + position2.z * (1. - val);
+      vec4 mvPosition = modelViewMatrix * vec4( vPos, 1.0 );
+
+      if(mvPosition.z > border){
+        opacity = max_opacity;
+        gl_PointSize = size;
+      }else if(mvPosition.z < min_border){
+        opacity = min_opacity;
+        gl_PointSize = size + sizeAdd;
+      }else{
+        float percent = (border - mvPosition.z)/(border - min_border);
+        opacity = (1.0-percent) * (max_opacity - min_opacity) + min_opacity;
+        gl_PointSize = percent * (sizeAdd) + size;  
+      }
+      float positionY = vPos.y;
+      vColor.x = abs(sin(positionY));
+      vColor.y = abs(cos(positionY));
+      vColor.z = abs(cos(positionY));
+      gl_Position = projectionMatrix * mvPosition;
+    }
+  </script>
+  <script type="x-shader/x-fragment" id="fragmentshader">
+    uniform vec3 color;
+    uniform sampler2D texture;
+    varying float opacity;
+    varying vec3 vColor;
+    void main() {
+        gl_FragColor = vec4(vColor * color, 1);
+        gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+    }
+    
+  </script>
+
+  <script type="module">
+    import TWEEN from '../homepage/libs/Tween.js';
     let scene, renderer, camera, width, height, aspect;
     const threeJs = document.getElementById('threeJs');
     scene = new THREE.Scene();
@@ -46,7 +96,7 @@
     threeJs.appendChild(renderer.domElement);
     camera = new THREE.PerspectiveCamera(45, aspect, 1, 5000);
     camera.position.set(0, 250, 400);
-    cameraControl = new THREE.OrbitControls(camera, renderer.domElement);
+    const cameraControl = new THREE.OrbitControls(camera, renderer.domElement);
     cameraControl.enableDamping = true
     cameraControl.dampingFactor = 0.01
     cameraControl.minDistance = 250;
@@ -94,7 +144,7 @@
     }
     createSkyBox();
 
-    let points;
+    // let points;
     const fluffy = textureLoader.load('./fluffy.png');
     function createPoint(pointsNumber) {
       const pointGeo = new THREE.Geometry();
@@ -121,7 +171,7 @@
       points = new THREE.Points(pointGeo, pointMat);
       scene.add(points);
     }
-    createPoint(500);
+    // createPoint(500);
     function pointAnimation() {
       points.geometry.vertices.forEach(v => {
         v.z = v.z - v.velocityZ;
@@ -143,7 +193,76 @@
     });
 
 
+    //test
+    let particleSystem;
+    function testPoint(){
+      const pointGeo = new THREE.BufferGeometry();
+      const vertices = [];
+      const uniforms = {
+        color: {
+          type: 'v3',
+          value: new THREE.Color(0xffffff)
+        },
+        texture: {
+          value: fluffy
+        },
+        val: {
+          value: 1.0
+        }
+      }
+      const shaderMaterial = new THREE.ShaderMaterial({
+        uniforms,
+        vertexShader: document.getElementById('vertexshader').textContent,
+        fragmentShader: document.getElementById('fragmentshader').textContent,
+        blending: THREE.AdditiveBlending,
+        depthTest: false,
+        transparent: true
+      })
+      const range = 500;
+      for (let i = 0; i < 500; i++) {
+        let x = THREE.Math.randInt(-range, range);
+        let y = THREE.Math.randInt(-range, range);
+        let z = THREE.Math.randInt(-range, range);
 
+        vertices.push(x, y, z)
+      }
+      pointGeo.setAttribute('position',new THREE.Float32BufferAttribute(vertices, 3))
+      const pointLen = pointGeo.attributes.position.array.length;
+      const sizes = new Float32Array(pointLen);
+      for(let i = 0; i<pointLen; i++){
+        sizes[i] = 4
+      };
+      pointGeo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+      particleSystem = new THREE.Points(pointGeo, shaderMaterial);
+      // let pos = {val: 1}
+      // let tween = new TWEEN.Tween(pos).to({
+      //   val: 0
+      // }, 1500).easing(TWEEN.Easing.Quadratic.InOut).delay(1000).onUpdate(function(){
+      //   particleSystem.material.uniforms.val.value = this.val;
+      // });
+      // let tweenBack = new TWEEN.Tween(pos).to({
+      //   val: 1
+      // }, 1500).easing(TWEEN.Easing.Quadratic.InOut).delay(1000).onUpdate(function(){
+      //   particleSystem.material.uniforms.val.value = this.val;
+      // });
+      // tween.chain(tweenBack);
+      // tweenBack.chain(tween);
+      // tween.start();
+
+      scene.add(particleSystem)
+    }
+    testPoint()
+    function testUpdate(){
+      let time = Date.now() * 0.005;
+      particleSystem.rotation.y = 0.01 * time;
+      let bufferObj = particleSystem.geometry;
+      let sizes = bufferObj.attributes.size.array;
+      let len = sizes.length;
+      for(let i = 0; i<len; i++){
+        sizes[i] = 1.5 * (2 + Math.sin(0.02 * i + time));
+      }
+      bufferObj.attributes.size.needsUpdate = true;
+    }
 
     function initStats() {
       let stats = new Stats();
@@ -154,7 +273,9 @@
     let statsUI = initStats();
 
     function render() {
-      pointAnimation();
+      testUpdate()
+      // TWEEN.update();
+      // pointAnimation();
       requestAnimationFrame(render);
       cameraControl.update();
       renderer.render(scene, camera);
