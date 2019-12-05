@@ -95,13 +95,14 @@
     // renderer.shadowMap.enabled = true;
     threeJs.appendChild(renderer.domElement);
     camera = new THREE.PerspectiveCamera(45, aspect, 1, 5000);
-    camera.position.set(0, 250, 400);
+    camera.position.set(0, 250, 800);
     const cameraControl = new THREE.OrbitControls(camera, renderer.domElement);
     cameraControl.enableDamping = true
     cameraControl.dampingFactor = 0.01
-    // cameraControl.minDistance = 250;
-    // cameraControl.maxDistance = 400;
-    // scene.fog = new THREE.FogExp2(0x000000, 0.00025)
+    cameraControl.autoRotate  = true;
+    cameraControl.minDistance = 250;
+    cameraControl.maxDistance = 600;
+    scene.fog = new THREE.FogExp2(0xffffff, 0.00015)
 
     function handleWindowResize() {
       width = innerWidth;
@@ -112,16 +113,16 @@
     }
     window.addEventListener('resize', handleWindowResize);
 
-    const globalLight = new THREE.AmbientLight(0xffffff, .7);
+    const globalLight = new THREE.AmbientLight(0xffffff, .8);
     // const directionalLight = new THREE.DirectionalLight(0xffeedd);
     // directionalLight.position.set(0, 0, 1);
     // const insideLight = new THREE.HemisphereLight(0xffffff, 0xffffff, .25);
     const shadowLight = new THREE.DirectionalLight(0xffffff, .2);
     // insideLight.position.set(-30, 40, 0);
-    shadowLight.position.set(-200, 250, 0);
+    shadowLight.position.set(500, 300, 500);
     // shadowLight.castShadow = true;
     scene.add(globalLight, shadowLight);
-    // var spotLightHelper = new THREE.SpotLightHelper(shadowLight);
+    // var spotLightHelper = new THREE.DirectionalLightHelper(shadowLight);
     // scene.add(spotLightHelper);
     var axesHelper = new THREE.AxesHelper(5);
     scene.add(axesHelper);
@@ -129,7 +130,7 @@
     let textureLoader = new THREE.TextureLoader();
 
     function createSkyBox() {
-      const textures = ['mat_ft.jpg', 'mat_bk.jpg', 'mat_up.jpg', 'mat_dn.jpg', 'mat_rt.jpg', 'mat_lf.jpg'];
+      const textures = ['mat_ft.png', 'mat_bk.png', 'mat_up.png', 'mat_dn.png', 'mat_rt.png', 'mat_lf.png'];
       const boxTexture = textures.reduce((prev, mat) => {
         let texture = new THREE.MeshBasicMaterial({
           map: textureLoader.load(`./skybox/${mat}`)
@@ -149,13 +150,66 @@
       new THREE.OBJLoader()
         .setMaterials(mtl)
         .load(`./low-poly-mill.obj`, obj => {
-          obj.position.set(0, -50, 0);
+          obj.position.set(0, -150, 0);
+          obj.rotation.y = Math.PI * -.8;
+          obj.scale.set(1.3, 1.3, 1.3);
           scene.add(obj);
         });
     });
 
     let particle = new Particle(3);
     scene.add(particle.particleSystem)
+
+    //test
+    // let circle = new THREE.Geometry();
+    // for(let i = 1; i<=3; i++){
+    //   let circleGeo = new THREE.SphereGeometry(5*i, 15, 15);
+    //   let circleMesh = new THREE.Mesh(circleGeo)
+    //   circleMesh.updateMatrix()
+    //   circle.merge(circleMesh.geometry, circleMesh.matrix)
+    // }
+    // let circleMat = new THREE.MeshBasicMaterial({color: 0x84DD63, transparent: true, opacity: .3})
+    // let obj = new THREE.Mesh(circle, circleMat)
+
+    // obj.position.set(20, 20, 20);
+    // scene.add(obj);
+    let circle = new THREE.Group();
+    let circleMat = new THREE.MeshBasicMaterial({color: 0x84DD63, transparent: true, opacity: .9})
+    let box = [];
+    for(let i = 1; i<=1; i++){
+      let circleGeo = new THREE.SphereGeometry(1, 15, 15);
+      let mesh = new THREE.Mesh(circleGeo, circleMat);
+      box.push(mesh)
+      circle.add(mesh);
+    }
+    circle.position.set(20 ,30, 20);
+    scene.add(circle)
+    console.log(box[0])
+    let tweenA = new TWEEN.Tween(box[0].scale)
+    .to({x: 15, y:15, z:15}, 1000)
+    .start();
+    let tweenB = new TWEEN.Tween(box[0].material)
+    .to({opacity: .1}, 1000)
+    .start();
+    tweenA.repeat(Infinity);
+    tweenB.repeat(Infinity);
+
+    threeJs.addEventListener('click', function(e){
+      let mouse = new THREE.Vector2();
+      let raycaster = new THREE.Raycaster();
+
+      mouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1;
+      mouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+      let intersects = raycaster.intersectObjects(scene.children, true)
+      if (intersects.length > 0) {
+          // console.log(intersects[0]);
+          intersects[0].object.material.color = {b:0, g:0, r:1};
+      }
+
+      // console.log(mouse, raycaster)
+    })
+
 
     function initStats() {
       let stats = new Stats();

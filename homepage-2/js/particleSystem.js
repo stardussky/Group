@@ -2,7 +2,7 @@ const textureLoader = new THREE.TextureLoader();
 const fluffy = textureLoader.load("./fluffy.png");
 
 class Particle {
-  constructor(size=1, range=500, density=500) {
+  constructor(size=1, range=500, density=300) {
     this.size = size;
     this.range = range;
     this.density = density;
