@@ -2,7 +2,7 @@ const textureLoader = new THREE.TextureLoader();
 const fluffy = textureLoader.load("./fluffy.png");
 
 class Particle {
-  constructor(size=1, range=500, density=300) {
+  constructor(size = 1, range = 500, density = 300) {
     this.size = size;
     this.range = range;
     this.density = density;
@@ -42,9 +42,9 @@ class Particle {
     const pointLen = pointGeo.attributes.position.array.length;
     const sizes = new Float32Array(pointLen);
     const velocitys = new Float32Array(pointLen);
-    for(let i = 0; i<pointLen; i++){
-      let velocity = THREE.Math.randFloat(-.25, .25);
-      velocitys[i] = velocity
+    for (let i = 0; i < pointLen; i++) {
+      let velocity = THREE.Math.randFloat(-0.25, 0.25);
+      velocitys[i] = velocity;
     }
     pointGeo.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
     pointGeo.setAttribute("velocity", new THREE.BufferAttribute(velocitys, 1));
@@ -61,7 +61,8 @@ class Particle {
     for (let i = 0; i < len; i++) {
       sizes[i] = this.size * (1 + Math.sin(0.02 * i + time));
       positions[i] += Math.PI * velocitys[i];
-      if (positions[i] <= -this.range || positions[i] >= this.range) velocitys[i]*=-1;
+      if (positions[i] <= -this.range || positions[i] >= this.range)
+        velocitys[i] *= -1;
     }
     bufferObj.attributes.position.needsUpdate = true;
     bufferObj.attributes.size.needsUpdate = true;
@@ -73,4 +74,4 @@ class Particle {
     this.particleSystem.material.uniforms.color.value = colors;
   }
 }
-export {Particle};
+export { Particle };

@@ -33,6 +33,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
   <script src="../homepage/libs/OBJLoader.js"></script>
   <script src="../homepage/libs/MTLLoader.js"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TweenMax.min.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TimelineMax.min.js'></script>
   <script type="x-shader/x-vertex" id="vertexshader">
     attribute float size;
     uniform float val;
@@ -81,7 +83,6 @@
   </script>
 
   <script type="module">
-    import TWEEN from '../homepage/libs/Tween.js';
     import {Particle} from './js/particleSystem.js';
 
     let scene, renderer, camera, width, height, aspect;
@@ -173,26 +174,28 @@
 
     // obj.position.set(20, 20, 20);
     // scene.add(obj);
-    let circle = new THREE.Group();
-    let circleMat = new THREE.MeshBasicMaterial({color: 0x84DD63, transparent: true, opacity: .9})
+
     let box = [];
-    for(let i = 1; i<=1; i++){
+    for(let i = 0; i<3; i++){
+      let color = 0xffffff * Math.random();
       let circleGeo = new THREE.SphereGeometry(1, 15, 15);
+      let circleMat = new THREE.MeshBasicMaterial({color: color, transparent: true, opacity: .9})
       let mesh = new THREE.Mesh(circleGeo, circleMat);
+      mesh.position.set(20 ,30, 20);
       box.push(mesh)
-      circle.add(mesh);
+      scene.add(mesh)
     }
-    circle.position.set(20 ,30, 20);
-    scene.add(circle)
-    console.log(box[0])
-    let tweenA = new TWEEN.Tween(box[0].scale)
-    .to({x: 15, y:15, z:15}, 1000)
-    .start();
-    let tweenB = new TWEEN.Tween(box[0].material)
-    .to({opacity: .1}, 1000)
-    .start();
-    tweenA.repeat(Infinity);
-    tweenB.repeat(Infinity);
+    let timeline = new TimelineMax();
+    timeline.to(box[0].scale, 1, {x: 15, y:15, z:15})
+    .to(box[0].material, 1, {opacity: 0})
+    .to(box[1].scale, 1, {x: 15, y:15, z:15})
+    .to(box[1].material, 1, {opacity: 0})
+    .to(box[2].scale, 1, {x: 15, y:15, z:15})
+    .to(box[2].material, 1, {opacity: 0})
+    timeline.repeat(-1)
+    timeline.play()
+    console.log(box)
+
 
     threeJs.addEventListener('click', function(e){
       let mouse = new THREE.Vector2();
@@ -221,8 +224,7 @@
 
     function render() {
       particle.update();
-      TWEEN.update();
-      
+
       cameraControl.update();
       statsUI.update();
       requestAnimationFrame(render);
