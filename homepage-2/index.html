@@ -28,13 +28,15 @@
 <body>
   <div id="stats"></div>
   <div id="threeJs"></div>
-  <script src="../homepage/libs/three.min.js"></script>
-  <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+
+  <script src="./libs/three.min.js"></script>
+  <script src="./libs/OrbitControls.js"></script>
+  <script src="./libs/OBJLoader.js"></script>
+  <script src="./libs/MTLLoader.js"></script>
+  <script src='./libs/TweenMax.min.js'></script>
+  <script src='./libs/TimelineMax.min.js'></script>
+  <script src="./js/object.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
-  <script src="../homepage/libs/OBJLoader.js"></script>
-  <script src="../homepage/libs/MTLLoader.js"></script>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TweenMax.min.js'></script>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TimelineMax.min.js'></script>
   <script type="x-shader/x-vertex" id="vertexshader">
     attribute float size;
     uniform float val;
@@ -81,7 +83,6 @@
         gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
     }
   </script>
-
   <script type="module">
     import {Particle} from './js/particleSystem.js';
 
@@ -161,57 +162,41 @@
     let particle = new Particle(3);
     scene.add(particle.particleSystem)
 
+    let button = new CircleButton(20, 30, 20);
+    scene.add(button.button)
+    button.update()
+
     //test
-    // let circle = new THREE.Geometry();
-    // for(let i = 1; i<=3; i++){
-    //   let circleGeo = new THREE.SphereGeometry(5*i, 15, 15);
-    //   let circleMesh = new THREE.Mesh(circleGeo)
-    //   circleMesh.updateMatrix()
-    //   circle.merge(circleMesh.geometry, circleMesh.matrix)
-    // }
-    // let circleMat = new THREE.MeshBasicMaterial({color: 0x84DD63, transparent: true, opacity: .3})
-    // let obj = new THREE.Mesh(circle, circleMat)
-
-    // obj.position.set(20, 20, 20);
-    // scene.add(obj);
-
-    let box = [];
-    for(let i = 0; i<3; i++){
-      let color = 0xffffff * Math.random();
-      let circleGeo = new THREE.SphereGeometry(1, 15, 15);
-      let circleMat = new THREE.MeshBasicMaterial({color: color, transparent: true, opacity: .9})
-      let mesh = new THREE.Mesh(circleGeo, circleMat);
-      mesh.position.set(20 ,30, 20);
-      box.push(mesh)
-      scene.add(mesh)
-    }
-    let timeline = new TimelineMax();
-    timeline.to(box[0].scale, 1, {x: 15, y:15, z:15})
-    .to(box[0].material, 1, {opacity: 0})
-    .to(box[1].scale, 1, {x: 15, y:15, z:15})
-    .to(box[1].material, 1, {opacity: 0})
-    .to(box[2].scale, 1, {x: 15, y:15, z:15})
-    .to(box[2].material, 1, {opacity: 0})
-    timeline.repeat(-1)
-    timeline.play()
-    console.log(box)
-
-
     threeJs.addEventListener('click', function(e){
       let mouse = new THREE.Vector2();
       let raycaster = new THREE.Raycaster();
+      let obj;
 
       mouse.x = (e.clientX / renderer.domElement.clientWidth) * 2 - 1;
       mouse.y = -(e.clientY / renderer.domElement.clientHeight) * 2 + 1;
       raycaster.setFromCamera(mouse, camera);
       let intersects = raycaster.intersectObjects(scene.children, true)
       if (intersects.length > 0) {
-          // console.log(intersects[0]);
-          intersects[0].object.material.color = {b:0, g:0, r:1};
+        obj = intersects[0].object;
+        if(obj.parent.type !== 'Scene') {
+          while(obj.parent.type !== 'Scene'){
+            obj = obj.parent;
+          } 
+        }
       }
-
-      // console.log(mouse, raycaster)
+      if(obj.type === 'Group'){
+        obj.children.forEach(item=>{
+          item.material.color = {b:0, g:0, r:1};
+        })
+      }
+        // console.log(obj)
     })
+    // let SpriteText2D = THREE_Text2D.SpriteText2D;
+    // let textAlign = THREE_Text2D.textAlign;
+    // let opts = { align: textAlign.center, font: '1rem 微軟正黑體', fillStyle: '#ffffff', antialias: true };
+    // let text = new SpriteText2D('apple', opts)
+    // scene.add(text)
+    // console.log(text)
 
 
     function initStats() {
