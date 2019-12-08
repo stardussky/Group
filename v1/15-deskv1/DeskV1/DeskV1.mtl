@@ -1,0 +1,25 @@
+# Blender MTL File: 'DeskV1.blend'
+# Material Count: 2
+
+newmtl Material.002
+Ns 506.250000
+Ka 1.000000 1.000000 1.000000
+Kd 0.797410 0.797410 0.797410
+Ks 0.500000 0.500000 0.500000
+Ke 0.0 0.0 0.0
+Ni 1.450000
+d 1.000000
+illum 3
+
+newmtl beech_wood
+Ns 225.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.0 0.0 0.0
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -s 5.000000 5.000000 5.000000 F:\\blenderDEV\\blenderhub\\models\\texwork\\beech wood\\beech wood_normal.jpg
+map_Kd -s 5.000000 5.000000 5.000000 F:\\blenderDEV\\blenderhub\\models\\texwork\\beech wood\\beech wood_albedo.jpg
+map_Ns -s 5.000000 5.000000 5.000000 F:\\blenderDEV\\blenderhub\\models\\texwork\\beech wood\\beech wood_roughness.jpg

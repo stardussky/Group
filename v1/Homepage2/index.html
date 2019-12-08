@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    #threeJs {
+      height: 100vh;
+    }
+
+    #stats {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+    .btn {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="stats"></div>
+  <div id="threeJs"></div>
+  <button class="btn">HD</button>
+  <script src="./libs/three.min.js"></script>
+  <script src="./libs/DRACOLoader.js"></script>
+  <script src="./libs/GLTFLoader.js"></script>
+  <script src="./js/character.js"></script>
+  <script src="./js/object.js"></script>
+  <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js'></script>
+  <script src="./js/cannon.js"></script> 
+  <script src="./libs/CannonDebugRenderer.js"></script>
+  <script>
+    let threeJs = document.getElementById('threeJs');
+    let btn = document.querySelector('.btn');
+    btn.addEventListener('click', ()=>{
+      // let status = renderer.antialias ? false : true;
+      // console.log(renderer)
+      threeJs.removeChild(threeJs.lastChild);
+      renderer = new THREE.WebGLRenderer({antialias: true});
+      renderer.setSize(width, height);
+      renderer.setClearColor(0x87CEEB, 1);
+      threeJs.appendChild(renderer.domElement);
+    })
+
+    function initStats() {
+      let stats = new Stats();
+      stats.setMode(0);
+      document.getElementById('stats').append(stats.domElement);
+      return stats;
+    }
+    let statsUI = initStats();
+
+    let GLTFloader = new THREE.GLTFLoader();
+    THREE.DRACOLoader.setDecoderPath('./libs/DRACOLoader.js');
+
+    let scene, renderer, camera, width, height, aspect;
+    let whiteMat = new THREE.MeshLambertMaterial({color: 0xF4F5F5});
+    let blackMat = new THREE.MeshLambertMaterial({color: 0x434343});
+    let pinkMat = new THREE.MeshLambertMaterial({color: 0xeda5ba});
+    let brownMat = new THREE.MeshLambertMaterial({color: 0xC4AD83});
+    let deepBrownMat = new THREE.MeshLambertMaterial({color: 0x8C7051});
+    let grayMat = new THREE.MeshLambertMaterial({color: 0x576066});
+    let silverMat = new THREE.MeshLambertMaterial({color: 0x999999});
+    let blueMat = new THREE.MeshLambertMaterial({color: 0x2A3D45});
+    let greenMat = new THREE.MeshLambertMaterial({color: 0x84DD63});
+
+    scene = new THREE.Scene();
+    renderer = new THREE.WebGLRenderer({antialias: false});
+    renderer.setSize(width, height);
+    renderer.setClearColor(0x87CEEB, 1);
+    threeJs.appendChild(renderer.domElement);
+    camera = new THREE.PerspectiveCamera(50, aspect, 1, 2000);
+    camera.position.set(0, 600, 700);
+    camera.lookAt(new THREE.Vector3(0, 60, 0));
+    cameraControl = new THREE.OrbitControls(camera, renderer.domElement);
+
+    function handleWindowResize() {
+      width = innerWidth;
+      height = innerHeight;
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', handleWindowResize);
+
+    function setLight(){
+      let globalLight = new THREE.HemisphereLight(0xffffff, 0xffffff, .5);
+      let shadowLight = new THREE.DirectionalLight(0xffffff, .9);
+      shadowLight.position.set(200, 200, 200);
+      let backLight = new THREE.DirectionalLight(0xffffff, .4);
+      backLight.position.set(-100, 100, 100);
+      scene.add(globalLight, shadowLight, backLight);
+    }
+    function setFloor(width, height){
+      let floorMat = new THREE.MeshBasicMaterial({color: 0x9CAFB7});
+      let floorGeo = new THREE.PlaneGeometry(width, height);
+      let floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.rotation.x = Math.PI * -.5;
+      floor.position.set(0, 0, 0);
+      scene.add(floor);
+
+      let floorShape = new CANNON.Plane();
+      let floorCM = new CANNON.Material();
+      let floorBody = new CANNON.Body({
+        mass: 0,
+        shape: floorShape,
+        material: floorCM
+      })
+      floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI * -.5);
+      world.add(floorBody);
+    }
+
+
+    let backWall = new Wall(0, -425, 950, 0).wall;
+    // let officeWall1 = new Wall(50, -350, 50, -.5);
+    // let officeWall2 = new Wall(400, 70, 50, 0);
+    scene.add(backWall);
+    let bigDesk = new BigDesk(-325, 250, .5);
+    scene.add(bigDesk.desk);
+
+    let user = new Character(0, 10, 0, 5, 5);
+    scene.add(user.character);
+
+    let desk1 = new Desk(-400, -255, -1).desk;
+    let desk2 = new Desk(-200, -255, -1).desk;
+    let desk3 = new Desk(-400, -150).desk;
+    let desk4 = new Desk(-200, -150).desk;
+    scene.add(desk1, desk2, desk3, desk4)
+
+    let photo1 = new Photo(-475, 140, 300, 70, 100, .5, 1).photo;
+    let photo2 = new Photo(-475, 170, 230, 50, 30, .5, 2).photo;
+    let photo3 = new Photo(-475, 150, 180, 30, 50, .5, 3).photo;
+    scene.add(photo1, photo2, photo3);
+    let chair1 = new Chair(-350, 100).chair;
+    let chair2 = new Chair(-230, 160, -.5).chair;
+    let chair3 = new Chair(-230, 220, -.5).chair;
+    let chair4 = new Chair(-230, 280, -.5).chair;
+    let chair5 = new Chair(-300, 390, -1).chair;
+    let chair6 = new Chair(-400, -350).chair;
+    let chair7 = new Chair(-400, -50, -1).chair;
+    let chair8 = new Chair(-200, -350).chair;
+    let chair9 = new Chair(-200, -50, -1).chair;
+    scene.add(chair1, chair2, chair3, chair4, chair5, chair6, chair7, chair8, chair9);
+    let chair = new Chair().chair;
+    scene.add(chair);
+
+    // let chair = new Chair().chair;
+    // scene.add(chair)
+
+    let plant1 = new Plant(-450, 20).plant;
+    scene.add(plant1);
+
+
+    window.addEventListener('keydown', function(e){
+      e.preventDefault();
+      if(e.keyCode === 37 || e.keyCode === 68){
+        user.moveRight();
+      }
+      if(e.keyCode === 38 || e.keyCode === 87){
+        user.moveTop();
+      }
+      if(e.keyCode === 39 || e.keyCode === 65){
+        user.moveLeft();
+      }
+      if(e.keyCode === 40 || e.keyCode === 83){
+        user.moveDown();
+      }
+    })
+    
+
+    //cannon debug
+    let cannonDebugRenderer = new THREE.CannonDebugRenderer(scene, world)
+
+
+    world.add(user.characterBody)
+    const timeStep = 1.0 / 60.0;
+    function render(){
+      world.step(timeStep);
+      user.updateMesh();
+
+      requestAnimationFrame(render);
+      cameraControl.update();
+      renderer.render(scene, camera);
+      statsUI.update();
+
+      cannonDebugRenderer.update() // Update the debug renderer
+    }
+
+    leftWall();
+    setFloor(950, 850);
+    setLight();
+    handleWindowResize();
+    render();
+  </script>
+</body>
+
+</html>

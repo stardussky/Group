@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      list-style: none;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chat {
+      width: 500px;
+      height: 100vh;
+    }
+
+    .chat_room {
+      width: 100%;
+      height: 80%;
+    }
+
+    .chat_room li {
+      display: flex;
+    }
+
+    .chat_room li.self {
+      color: orange;
+      justify-content: flex-end;
+    }
+
+    .chat_room li.system {
+      color: gray;
+      justify-content: center;
+    }
+
+    .chat_input {
+      width: 100%;
+      height: 20%;
+    }
+
+    .chat_input label {
+      display: inline-block;
+      width: 15%;
+      vertical-align: top;
+    }
+
+    .chat_input textarea {
+      width: 80%;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app"></div>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/vue-router/3.1.3/vue-router.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/vuex/3.1.1/vuex.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/vuefire/2.1.2/vuefire.js'></script>
+  <!-- <script src="https://www.gstatic.com/firebasejs/7.3.0/firebase-app.js"></script> -->
+  <!-- <script src="https://www.gstatic.com/firebasejs/3.1.0/firebase-database.js"></script> -->
+  <script src="https://www.gstatic.com/firebasejs/4.12.1/firebase.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/4.12.1/firebase-firestore.js"></script>
+  <script src="./firebase.js"></script>
+  <script>
+    const app = {
+      name: 'app',
+      template: `
+        <router-view></router-view>
+      `
+    }
+    const chat = {
+      name: 'chat',
+      template: `
+      <div class="chat">
+        <ul class="chat_room">
+          <li 
+            v-for='msg in messages' 
+            :class='{
+              self: msg.author.uid === userID,
+              system: msg.system
+            }'
+          >
+            <p v-if='!msg.system'>{{ msg.author.name }} : </p>
+            <p>{{ msg.content }}</p>
+            <p>// {{ msg.createTime }}</p>
+          </li>
+        </ul>
+        <div class="chat_input">
+          <div>
+            <label>
+              USER: 
+            </label>
+            <input type="text" v-model='userName'>
+          </div>
+          <div>
+            <label>
+              Message: 
+            </label>
+            <textarea v-model='messageInput'></textarea>
+          </div>
+          <button @click='addMessage'>送出</button>
+          <router-link to='/'>回上頁</router-link>
+        </div>
+      </div>
+      `,
+      data() {
+        return {
+          messageInput: '',
+          messages: []
+        }
+      },
+      computed: {
+        userName: {
+          get() {
+            return this.$store.state.chatModule.userName;
+          },
+          set(val) {
+            this.$store.commit('chatModule/SET_USERNAME', {
+              name: val,
+              id: this.userID
+            });
+          }
+        },
+        userID: {
+          get() {
+            return this.$store.state.chatModule.userID;
+          }
+        }
+      },
+      // firestore: {
+      //   messages: fStore.collection('Message'),
+      // },
+      methods: {
+        addMessage() {
+          let date = new Date();
+          fStore.collection('Message').add({
+            'author': {
+              'uid': this.userID,
+              'name': this.userName,
+              'photoURL': ''
+            },
+            'content': this.messageInput,
+            'createTime': `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
+            'system': false
+          }).then(() => {
+            this.messageInput = '';
+          })
+        }
+      },
+      created() {
+        this.$bind('messages', fStore.collection('Message').orderBy('createTime'));
+        if (!this.$store.hasModule('chatModule')) {
+          this.$store.registerModule('chatModule', chatModule());
+        }
+      },
+      beforeDestroy() {
+        this.$store.unregisterModule('chatModule');
+      }
+    }
+    const login = {
+      name: 'login',
+      template: `
+      <div class="login">
+        <h1>LOGIN</h1>
+        <div>
+          <label>User Name: </label>
+          <input type="text" v-model='name'>
+        </div>
+        <router-link to='/chat' @click.native='setName'>Next</router-link>
+      </div>
+      `,
+      data() {
+        return {
+          name: 'anonymous',
+          id: Math.random()
+        }
+      },
+      methods: {
+        setName() {
+          this.$store.commit('chatModule/SET_USERNAME', {
+            name: this.name,
+            id: this.id
+          });
+        }
+      },
+      beforeDestroy() {
+        let date = new Date();
+        fStore.collection('Message').add({
+          'author': {
+            'uid': this.id,
+            'name': this.name,
+            'photoURL': ''
+          },
+          'content': `${this.name} enter in chat-room`,
+          'createTime': `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`,
+          'system': true
+        })
+      }
+    }
+
+    const router = new VueRouter({
+      routes: [{
+          path: '/',
+          component: login
+        },
+        {
+          path: '/chat',
+          component: chat
+        },
+        {
+          path: '*',
+          redirect: '/'
+        }
+      ]
+    })
+    const store = new Vuex.Store({});
+    Vuex.Store.prototype.hasModule = function (module) {
+      return this._modules.root._children[module] !== undefined;
+    }
+    const chatModule = function () {
+      return {
+        namespaced: true,
+        state: {
+          userName: null,
+          userID: null
+        },
+        actions: {
+
+        },
+        mutations: {
+          SET_USERNAME(state, {name,id}) {
+            state.userName = name;
+            state.userID = id;
+          }
+        }
+      }
+    }
+    Vue.use(Vuefire.firestorePlugin)
+    new Vue({
+      render: h => h(app),
+      router,
+      store
+    }).$mount('#app');
+  </script>
+</body>
+</html>

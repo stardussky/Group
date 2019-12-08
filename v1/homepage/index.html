@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      height: 100vh;
+    }
+
+    #stats {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="stats"></div>
+
+  <script src="./libs/three.min.js"></script>
+  <script src="./libs/GLTFLoader.js"></script>
+  <script src="./libs/DRACOLoader.js"></script>
+  <script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stats.js/r16/Stats.min.js"></script>
+  <script>
+    let scene = new THREE.Scene();
+
+    let renderer = new THREE.WebGLRenderer({
+      antialias: true
+    });
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.setClearColor(0xdddddd, 1);
+    document.body.appendChild(renderer.domElement);
+
+    let camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, .1, 1000);
+    camera.position.set(40, 20, 0);
+    camera.lookAt(scene.position);
+    cameraControl = new THREE.OrbitControls(camera, renderer.domElement);
+
+    // let ambientLight = new THREE.AmbientLight(0xfcd77e);
+    // let spotLight = new THREE.SpotLight(0xfff0cd, 1.5, 200, 1.05, 1, 1);
+    // spotLight.position.set(0, 100, 0);
+    // let directionalLight = new THREE.DirectionalLight(0xfff0cd, .7);
+    // directionalLight.position.set(50, 0, 0);
+    // scene.add(ambientLight, spotLight, directionalLight);
+    let globalLight = new THREE.HemisphereLight(0xffffff, 0xffffff, .5);
+    let shadowLight = new THREE.DirectionalLight(0xffffff, .9);
+    shadowLight.position.set(200, 200, 200);
+    let backLight = new THREE.DirectionalLight(0xffffff, .4);
+    backLight.position.set(-100, 100, 100);
+    scene.add(globalLight, shadowLight, backLight);
+
+    let axes = new THREE.AxesHelper(20);
+    scene.add(axes);
+
+    function initStats() {
+      let stats = new Stats();
+      stats.setMode(0);
+      document.getElementById('stats').append(stats.domElement);
+      return stats;
+    }
+    let statsUI = initStats();
+
+    class User {
+      constructor(x, z) {
+        this.x = x;
+        this.z = z;
+        let handMap = new THREE.TextureLoader().load('./skin/handskin.png');
+        let skinMap = new THREE.TextureLoader().load('./skin/bodyskin.png');
+        let headMap = new THREE.TextureLoader().load('./skin/headskin.png');
+        let handMat = new THREE.MeshStandardMaterial({
+          roughness: 1,
+          metalness: .1,
+          transparent: false,
+          opacity: 1,
+          side: THREE.DoubleSide,
+          map: handMap
+        })
+        let skinMat = new THREE.MeshStandardMaterial({
+          roughness: 1,
+          metalness: .1,
+          transparent: false,
+          opacity: 1,
+          side: THREE.DoubleSide,
+          map: skinMap
+        })
+        let headMat = [];
+        for (let i = 0; i < 6; i++) {
+          let map;
+          if (i === 0) map = headMap;
+          else map = skinMap;
+          headMat.push(new THREE.MeshStandardMaterial({
+            map
+          }))
+        }
+
+        let headGeo = new THREE.BoxGeometry(1, 1, 1);
+        let bodyGeo = new THREE.BoxGeometry(1.1, 2, 1.1);
+        let footGeo = new THREE.BoxGeometry(.4, 1, .4);
+        this.userHead = new THREE.Mesh(headGeo, headMat);
+        this.userBody = new THREE.Mesh(bodyGeo, skinMat);
+        this.userHand1 = new THREE.Mesh(footGeo, handMat);
+        this.userHand2 = this.userHand1.clone();
+        this.userHead.position.set(0, 2.5, 0);
+        this.userBody.position.set(0, 1, 0);
+        this.userHand1.position.set(0, 1.5, -.7);
+        this.userHand2.position.set(0, 1.5, .7);
+
+        this.userHand = new THREE.Group();
+        this.userHand.add(this.userHand1, this.userHand2);
+        this.user = new THREE.Group();
+        this.user.add(this.userHead, this.userBody, this.userHand);
+        if (this.x && this.z) this.user.position.set(this.x, 0, this.z);
+      }
+    }
+    let user = new User();
+    let npc = new User(10, 10);
+    scene.add(user.user, npc.user);
+
+    class Desk {
+      constructor(x, z, w, h, l) {
+        this.x = x;
+        this.z = z;
+        this.w = w;
+        this.h = h;
+        this.l = l;
+        let deskMat = [];
+        let deskMapTp = new THREE.TextureLoader().load('./desk.png');
+        let deskMapFt = new THREE.TextureLoader().load('./desk01.png');
+        let deskMap = new THREE.TextureLoader().load('./desk02.png');
+        for (let i = 0; i < 6; i++) {
+          let map;
+          switch (i) {
+            case 0:
+              map = deskMapFt;
+              break;
+            case 2:
+              map = deskMapTp;
+              break;
+            default:
+              map = deskMap;
+          }
+          deskMat.push(new THREE.MeshBasicMaterial({
+            map
+          }));
+        }
+        let deskGeo = new THREE.BoxGeometry(this.w, this.h, this.l);
+        this.desk = new THREE.Mesh(deskGeo, deskMat);
+        this.desk.position.set(this.x, this.h / 2, this.z);
+      }
+    }
+    let desk = new Desk(15, 10, 5, 2.5, 10);
+    let desk2 = new Desk(15, -10, 5, 2.5, 10);
+    scene.add(desk.desk, desk2.desk);
+
+    class BackgroundBox {
+      constructor(w, h, l) {
+        this.w = w;
+        this.h = h;
+        this.l = l;
+        let materialBox = [];
+        let materialMap = [
+          new THREE.TextureLoader().load('./background/Daylight_Box_Front.bmp'),
+          new THREE.TextureLoader().load('./background/Daylight_Box_Back.jpg'),
+          new THREE.TextureLoader().load('./background/Daylight_Box_Top.bmp'),
+          new THREE.TextureLoader().load('./background/Daylight_Box_Bottom.jpg'),
+          new THREE.TextureLoader().load('./background/Daylight_Box_Right.jpg'),
+          new THREE.TextureLoader().load('./background/Daylight_Box_Left.jpg')
+        ]
+        for (let i = 0; i < 6; i++) {
+          materialBox.push(new THREE.MeshBasicMaterial({
+            map: materialMap[i]
+          }));
+          materialBox[i].side = THREE.BackSide
+        }
+
+        let boxGeo = new THREE.BoxGeometry(this.w, this.h, this.l);
+        this.box = new THREE.Mesh(boxGeo, materialBox);
+        this.box.position.set(0, this.h / 2, 0)
+      }
+    }
+    let box = new BackgroundBox(40, 15, 40);
+    scene.add(box.box);
+
+
+    let loader = new THREE.GLTFLoader();
+    THREE.DRACOLoader.setDecoderPath('./libs/DRACOLoader.js');
+    class OfficeTable {
+      constructor(x, z, rotate = 0) {
+        this.x = x;
+        this.z = z;
+        this.rotate = rotate;
+        this.table = new THREE.Group();
+        loader.setDRACOLoader(new THREE.DRACOLoader())
+        loader.load('./model/chair.glb', (gltf) => {
+          gltf.scene.position.set(1.9, 0, -3);
+          this.table.add(gltf.scene)
+        })
+        loader.load('./model/table2.glb', (gltf) => {
+          gltf.scene.rotation.y = 3.15;
+          this.table.add(gltf.scene)
+        });
+        loader.load('./model/laptop.glb', (gltf) => {
+          gltf.scene.position.set(3, 4.3, 0);
+          this.table.add(gltf.scene)
+        });
+        this.table.position.set(this.x, 0, this.z);
+        this.table.rotation.y = this.rotate;
+      }
+    }
+    let table = new OfficeTable(-5, -15, -3.1);
+    scene.add(table.table);
+
+
+
+    //操作
+    let rotateHandOffset = 0;
+    let positionX = 0;
+    let positionZ = 0;
+
+    function handRotate({
+      userHand
+    }) {
+      rotateHandOffset += 0.1;
+      userHand.rotation.y = Math.sin(rotateHandOffset) / 4;
+    }
+
+    function controlUser(e) {
+      if (e.key === 'w') {
+        positionX -= .5;
+        user.user.position.x = positionX;
+        user.user.rotation.y = 3.1;
+      }
+      if (e.key === 's') {
+        positionX += .5;
+        user.user.position.x = positionX;
+        user.user.rotation.y = 0;
+      }
+      if (e.key === 'd') {
+        positionZ -= .5;
+        user.user.position.z = positionZ;
+        user.user.rotation.y = 1.5;
+      }
+      if (e.key === 'a') {
+        positionZ += .5;
+        user.user.position.z = positionZ;
+        user.user.rotation.y = 4.7;
+      }
+      positionZ > 19 ? positionZ = 19 : positionZ < -19 ? positionZ = -19 : positionZ;
+      positionX > 19 ? positionX = 19 : positionX < -19 ? positionX = -19 : positionX;
+      handRotate(user);
+      console.log('Z:' + positionZ, 'X:' + positionX)
+    }
+
+    function controlNpc(x, z, speed) {
+      let npcPositionZ = z;
+      let npcPositionX = x;
+      let dx = speed;
+      let dz = speed;
+      let direction = true;
+      setInterval(() => {
+        direction = !direction
+      }, 5000)
+      return (limitX1, limitX2, limitZ1, limitZ2) => {
+        if (direction) {
+          npcPositionZ += dz;
+          npc.user.position.z = npcPositionZ;
+          dz > 0 ? npc.user.rotation.y = 4.7 : npc.user.rotation.y = 1.5;
+        } else {
+          npcPositionX += dx;
+          npc.user.position.x = npcPositionX;
+          dx > 0 ? npc.user.rotation.y = 0 : npc.user.rotation.y = 3.1;
+        }
+        if (npcPositionX > limitX1 || npcPositionX < limitX2) dx *= -1;
+        if (npcPositionZ > limitZ1 || npcPositionZ < limitZ2) dz *= -1;
+        handRotate(npc)
+      }
+    }
+    let npcMode1 = controlNpc(npc.user.position.x, npc.user.position.z, .03);
+
+    function render() {
+      requestAnimationFrame(render);
+      renderer.render(scene, camera);
+      statsUI.update();
+      window.addEventListener('keydown', controlUser);
+      npcMode1(10, 0, 19, 6);
+    }
+    render()
+  </script>
+</body>
+
+</html>
