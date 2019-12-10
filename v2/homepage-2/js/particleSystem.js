@@ -1,9 +1,13 @@
 const textureLoader = new THREE.TextureLoader();
 const fluffy = textureLoader.load("./fluffy.png");
+const rain = textureLoader.load("./rain.png");
 
 class Particle {
-  constructor(size = 1, range = 500, density = 300) {
+  constructor(size = 1, colorX, colorY, colorZ, range = 500, density = 300) {
     this.size = size;
+    this.colorX = colorX;
+    this.colorY = colorY;
+    this.colorZ = colorZ;
     this.range = range;
     this.density = density;
     const pointGeo = new THREE.BufferGeometry();
@@ -22,7 +26,40 @@ class Particle {
     };
     const shaderMaterial = new THREE.ShaderMaterial({
       uniforms,
-      vertexShader: document.getElementById("vertexshader").textContent,
+      vertexShader: `attribute float size;
+      uniform float val;
+      varying float opacity;
+      varying vec3 vColor;
+      void main() {
+        float border = -150.0;
+        float min_border = -160.0;
+        float max_opacity = 1.0;
+        float min_opacity = 0.01;
+        float sizeAdd = 1.0;
+  
+        vec3 vPos;
+        vPos.x = position.x * val;
+        vPos.y = position.y * val;
+        vPos.z = position.z * val;
+        vec4 mvPosition = modelViewMatrix * vec4( vPos, 1.0 );
+  
+        if(mvPosition.z > border){
+          opacity = max_opacity;
+          gl_PointSize = size;
+        }else if(mvPosition.z < min_border){
+          opacity = min_opacity;
+          gl_PointSize = size + sizeAdd;
+        }else{
+          float percent = (border - mvPosition.z)/(border - min_border);
+          opacity = (1.0-percent) * (max_opacity - min_opacity) + min_opacity;
+          gl_PointSize = percent * (sizeAdd) + size;  
+        }
+  
+        vColor.x = ${this.colorX};
+        vColor.y = ${this.colorY};
+        vColor.z = ${this.colorZ};
+        gl_Position = projectionMatrix * mvPosition;
+      }`,
       fragmentShader: document.getElementById("fragmentshader").textContent,
       blending: THREE.AdditiveBlending,
       depthTest: false,
@@ -66,12 +103,56 @@ class Particle {
     }
     bufferObj.attributes.position.needsUpdate = true;
     bufferObj.attributes.size.needsUpdate = true;
-    const colors = {
-      r: 1,
-      g: 1,
-      b: Math.random()
-    };
-    this.particleSystem.material.uniforms.color.value = colors;
   }
 }
-export { Particle };
+
+class RainDrop {
+  constructor(size = 3, ranges = 500) {
+    this.size = size;
+    this.ranges = ranges;
+    this.rainGeo = new THREE.Geometry();
+    const rainMaterial = new THREE.PointsMaterial({
+      color: 0xaaaaaa,
+      size: this.size,
+      map: rain,
+      transparent: true
+    });
+    let rainDrop;
+    for (let i = 0; i < 1500; i++) {
+      rainDrop = new THREE.Vector3(
+        THREE.Math.randInt(-this.ranges, this.ranges),
+        THREE.Math.randInt(-this.ranges, this.ranges),
+        THREE.Math.randInt(-this.ranges, this.ranges)
+      );
+      rainDrop.velocity = 0;
+      this.rainGeo.vertices.push(rainDrop);
+    }
+    this.rain = new THREE.Points(this.rainGeo, rainMaterial);
+    this.flashLight = new THREE.PointLight(0x062d89, 30, 500, 1.7);
+    this.flashLight.position.set(200, 100, 100);
+    // console.log(rainMaterial);
+  }
+  update() {
+    this.rainGeo.vertices.forEach(p => {
+      p.velocity -= 0.1 + Math.random() * 0.1;
+      p.y += p.velocity;
+      if (p.y < -this.ranges) {
+        p.y = this.ranges;
+        p.velocity = 0;
+      }
+    });
+    this.rainGeo.verticesNeedUpdate = true;
+    this.rain.rotation.y += 0.002;
+
+    if (Math.random() > 0.93 || this.flashLight.power > 100) {
+      if (this.flashLight.power < 100)
+        this.flashLight.position.set(
+          Math.random() * 400,
+          150 + Math.random() * 200,
+          100
+        );
+      this.flashLight.power = 50 + Math.random() * 500;
+    }
+  }
+}
+export { Particle, RainDrop };
