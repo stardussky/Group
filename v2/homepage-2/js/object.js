@@ -9,7 +9,7 @@ class CircleButton {
     this.opacity = [];
     this.scale = [];
     this.button = new THREE.Group();
-    this.button.name = 'button'
+    this.button.name = this.id;
     for (let i = 0; i < 5; i++) {
       let circleGeo = new THREE.SphereBufferGeometry(1, 15, 15);
       let circleMat = new THREE.MeshBasicMaterial({
@@ -22,18 +22,18 @@ class CircleButton {
       this.scale.unshift(mesh.scale);
       this.button.add(mesh);
       this.button.position.set(this.x, this.y, this.z);
-
-      let font = document.getElementById(`${this.id}`);
-      font.style.color = this.fontColor;
-      this.fontLabel = new THREE.CSS2DObject(font);
-      this.fontLabel.position.set(this.x, this.y + 20, this.z)
     }
+    let font = document.getElementById(`${this.id}`);
+    font.style.color = this.fontColor;
+    this.fontLabel = new THREE.CSS2DObject(font);
+    this.fontLabel.position.set(this.x, this.y + 20, this.z)
+    
+    this.t1 = new TimelineMax();
+    this.t2 = new TimelineMax();
   }
   update() {
-    let t1 = new TimelineMax();
-    let t2 = new TimelineMax();
-    t1.staggerTo(this.opacity, 3, { opacity: 0 }, 1).repeat(-1);
-    t2.staggerFromTo(
+    this.t1.staggerTo(this.opacity, 3, { opacity: 0 }, 1).repeat(-1);
+    this.t2.staggerFromTo(
       this.scale,
       3,
       { x: 0.1, y: 0.1, z: 0.1 },

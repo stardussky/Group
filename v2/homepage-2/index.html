@@ -155,6 +155,14 @@
         "mat_rt_n.png",
         "mat_lf_n.png"
       ];
+      const rainTimeTextures = [
+        "mat_ft_r.png",
+        "mat_bk_r.png",
+        "mat_up_r.png",
+        "mat_dn_r.png",
+        "mat_rt_r.png",
+        "mat_lf_r.png"
+      ];
       function createSkyBox(texture) {
         const boxTexture = texture.reduce((prev, mat) => {
           let texture = new THREE.MeshBasicMaterial({
@@ -262,7 +270,7 @@
         particle = "";
         rain = new RainDrop();
         scene.add(rain.rain, rain.flashLight);
-        createSkyBox(nightTimeTextures);
+        createSkyBox(rainTimeTextures);
       });
 
       function initStats() {
