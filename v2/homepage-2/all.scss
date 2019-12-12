@@ -1,0 +1,224 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: "Montserrat", "Noto Sans TC", sans-serif;
+}
+@mixin buttonActive($isHamburger: false) {
+  & {
+    @if ($isHamburger) {
+      span {
+        box-shadow: 0px 5px 1px #fff, 0px -5px 1px #fff;
+        &::before {
+          width: 200vw;
+          height: 200vw;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.7s;
+        }
+      }
+      width: 120px;
+      height: 135px;
+      a {
+        top: -38px;
+        transform: rotate(-90deg);
+      }
+      div::before {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.3);
+      }
+      p {
+        color: #67d2de;
+      }
+    } @else {
+      div::before {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.3);
+      }
+      p {
+        color: #67d2de;
+      }
+    }
+  }
+}
+@mixin button($isHamburger: false) {
+  font-family: "Montserrat", "Noto Sans TC", sans-serif;
+  border: none;
+  background-color: transparent;
+  outline: none;
+  transition: transform 0.3s;
+  width: 120px;
+  text-align: right;
+  > a {
+    display: inline-block;
+    text-decoration: none;
+    position: relative;
+    transition: transform 0.3s;
+    > p {
+      position: absolute;
+      top: 50%;
+      left: -65px;
+      transform: translateY(-50%);
+      color: #fff;
+      font-size: 1rem;
+      transition: color 0.3s;
+      @if ($isHamburger==false) {
+        left: -75px;
+      } @else {
+        font-weight: 700;
+      }
+    }
+    > div {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 1px solid #67d2de;
+      cursor: pointer;
+      position: relative;
+      @if ($isHamburger) {
+        > span {
+          display: block;
+          width: 15px;
+          height: 0.5px;
+          background-color: #fff;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          box-shadow: 0px 3px 1px #fff, 0px -3px 1px #fff;
+          transition: box-shadow 0.3s;
+          &::before {
+            content: "";
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background-color: #67d2de;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+        }
+      } @else {
+        > img {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        }
+      }
+      &::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 1px solid #ddd;
+        opacity: 0;
+        transition: transform 0.3s;
+      }
+    }
+  }
+  &:hover {
+    @include buttonActive;
+  }
+}
+.nav {
+  position: fixed;
+  top: 30px;
+  right: 40px;
+  > .hamburger {
+    > button {
+      @include button(true);
+    }
+  }
+  .list {
+    list-style: none;
+    height: 0;
+    visibility: hidden;
+    opacity: 0;
+    > li {
+      opacity: 0;
+      transition: opacity 0.3s;
+      margin-bottom: 10px;
+      > button {
+        @include button;
+      }
+    }
+  }
+  &:hover {
+    > .hamburger {
+      > button {
+        @include buttonActive(true);
+      }
+    }
+    > .list {
+      visibility: visible;
+      opacity: 1;
+      height: auto;
+      > li {
+        opacity: 1;
+        @for $i from 0 through 4 {
+          &:nth-of-type(#{$i}) {
+            transition-delay: 0.15s * $i;
+          }
+        }
+      }
+    }
+  }
+}
+.weather {
+  position: fixed;
+  bottom: 30px;
+  left: 40px;
+  display: flex;
+  > p {
+    color: #fff;
+    font-size: 2rem;
+    font-weight: 400;
+    margin-left: 10px;
+  }
+}
+
+#threeJs {
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  button {
+    border: none;
+    outline: none;
+    background-color: transparent;
+    cursor: pointer;
+  }
+}
+
+#stats {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+}
+.logo {
+  position: fixed;
+  top: 40px;
+  left: 40px;
+  > a {
+    display: inline-block;
+    width: 150px;
+  }
+}
+.setting {
+  border: none;
+  outline: none;
+  background-color: transparent;
+  position: absolute;
+  bottom: 30px;
+  right: 40px;
+  cursor: pointer;
+}
