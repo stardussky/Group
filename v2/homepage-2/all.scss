@@ -1,3 +1,28 @@
+$primary: #67d2de;
+$white: #ffffff;
+
+$baseFont: 14px;
+$baseLine: 10px;
+$lineLevel: 1.2;
+$fontLevel: 2px;
+
+@function font($level: 0){
+  @return $baseFont + round($level * $fontLevel);
+}
+@function line($size){
+  @return ceil($size * $lineLevel / $baseLine) * $baseLine;
+}
+@mixin font($level: 0, $lineHeight: null){
+  $size: font($level);
+  $line: line($size);
+  letter-spacing: $size / 5;
+  font-size: $size;
+  @if($lineHeight){
+    line-height: $lineHeight;
+  }@else {
+    line-height: $line;
+  }
+}
 * {
   margin: 0;
   padding: 0;
@@ -10,7 +35,7 @@ body {
   & {
     @if ($isHamburger) {
       span {
-        box-shadow: 0px 5px 1px #fff, 0px -5px 1px #fff;
+        box-shadow: 0px 5px 1px $white, 0px -5px 1px $white;
         &::before {
           width: 200vw;
           height: 200vw;
@@ -20,9 +45,9 @@ body {
         }
       }
       width: 120px;
-      height: 135px;
+      height: 150px;
       a {
-        top: -38px;
+        top: -43px;
         transform: rotate(-90deg);
       }
       div::before {
@@ -30,7 +55,7 @@ body {
         transform: translate(-50%, -50%) scale(1.3);
       }
       p {
-        color: #67d2de;
+        color: $primary;
       }
     } @else {
       div::before {
@@ -38,7 +63,7 @@ body {
         transform: translate(-50%, -50%) scale(1.3);
       }
       p {
-        color: #67d2de;
+        color: $primary;
       }
     }
   }
@@ -59,13 +84,13 @@ body {
     > p {
       position: absolute;
       top: 50%;
-      left: -65px;
+      left: -75px;
       transform: translateY(-50%);
-      color: #fff;
-      font-size: 1rem;
+      color: $white;
+      @include font(1);
       transition: color 0.3s;
       @if ($isHamburger==false) {
-        left: -75px;
+        left: -90px;
       } @else {
         font-weight: 700;
       }
@@ -74,27 +99,27 @@ body {
       width: 60px;
       height: 60px;
       border-radius: 50%;
-      border: 1px solid #67d2de;
+      border: 1px solid $primary;
       cursor: pointer;
       position: relative;
       @if ($isHamburger) {
         > span {
           display: block;
           width: 15px;
-          height: 0.5px;
-          background-color: #fff;
+          height: 1px;
+          background-color: $white;
           position: absolute;
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          box-shadow: 0px 3px 1px #fff, 0px -3px 1px #fff;
+          box-shadow: 0px 3px 1px $white, 0px -3px 1px $white;
           transition: box-shadow 0.3s;
           &::before {
             content: "";
             width: 0;
             height: 0;
             border-radius: 50%;
-            background-color: #67d2de;
+            background-color: $primary;
             position: absolute;
             top: 50%;
             left: 50%;

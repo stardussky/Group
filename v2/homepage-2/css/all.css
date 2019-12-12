@@ -41,11 +41,13 @@ body {
 .nav > .hamburger > button > a > p {
   position: absolute;
   top: 50%;
-  left: -65px;
+  left: -75px;
   -webkit-transform: translateY(-50%);
           transform: translateY(-50%);
-  color: #fff;
-  font-size: 1rem;
+  color: #ffffff;
+  letter-spacing: 3.2px;
+  font-size: 16px;
+  line-height: 20px;
   -webkit-transition: color 0.3s;
   transition: color 0.3s;
   font-weight: 700;
@@ -63,15 +65,15 @@ body {
 .nav > .hamburger > button > a > div > span {
   display: block;
   width: 15px;
-  height: 0.5px;
-  background-color: #fff;
+  height: 1px;
+  background-color: #ffffff;
   position: absolute;
   top: 50%;
   left: 50%;
   -webkit-transform: translate(-50%, -50%);
           transform: translate(-50%, -50%);
-  -webkit-box-shadow: 0px 3px 1px #fff, 0px -3px 1px #fff;
-          box-shadow: 0px 3px 1px #fff, 0px -3px 1px #fff;
+  -webkit-box-shadow: 0px 3px 1px #ffffff, 0px -3px 1px #ffffff;
+          box-shadow: 0px 3px 1px #ffffff, 0px -3px 1px #ffffff;
   -webkit-transition: -webkit-box-shadow 0.3s;
   transition: -webkit-box-shadow 0.3s;
   transition: box-shadow 0.3s;
@@ -159,14 +161,16 @@ body {
 .nav .list > li > button > a > p {
   position: absolute;
   top: 50%;
-  left: -65px;
+  left: -75px;
   -webkit-transform: translateY(-50%);
           transform: translateY(-50%);
-  color: #fff;
-  font-size: 1rem;
+  color: #ffffff;
+  letter-spacing: 3.2px;
+  font-size: 16px;
+  line-height: 20px;
   -webkit-transition: color 0.3s;
   transition: color 0.3s;
-  left: -75px;
+  left: -90px;
 }
 
 .nav .list > li > button > a > div {
@@ -216,12 +220,12 @@ body {
 
 .nav:hover > .hamburger > button {
   width: 120px;
-  height: 135px;
+  height: 150px;
 }
 
 .nav:hover > .hamburger > button span {
-  -webkit-box-shadow: 0px 5px 1px #fff, 0px -5px 1px #fff;
-          box-shadow: 0px 5px 1px #fff, 0px -5px 1px #fff;
+  -webkit-box-shadow: 0px 5px 1px #ffffff, 0px -5px 1px #ffffff;
+          box-shadow: 0px 5px 1px #ffffff, 0px -5px 1px #ffffff;
 }
 
 .nav:hover > .hamburger > button span::before {
@@ -234,7 +238,7 @@ body {
 }
 
 .nav:hover > .hamburger > button a {
-  top: -38px;
+  top: -43px;
   -webkit-transform: rotate(-90deg);
           transform: rotate(-90deg);
 }
@@ -341,3 +345,4 @@ body {
   right: 40px;
   cursor: pointer;
 }
+/*# sourceMappingURL=all.css.map */
