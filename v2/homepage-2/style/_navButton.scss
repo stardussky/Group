@@ -1,0 +1,147 @@
+@mixin buttonActive($isHamburger: false) {
+  & {
+    @if ($isHamburger) {
+      width: 150px;
+      height: 150px;
+      @include media(479px) {
+        width: 40px;
+        height: 115px;
+      }
+      .btn_circle {
+        transform: rotate(-90deg);
+        span {
+          box-shadow: 0px 5px 1px $white, 0px -5px 1px $white;
+          &::before {
+            width: 200vw;
+            height: 200vw;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.7s;
+          }
+        }
+      }
+      div::before {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.3);
+      }
+      p {
+        color: $primary;
+      }
+    } @else {
+      div::before {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.3);
+      }
+      p {
+        color: $primary;
+      }
+    }
+  }
+}
+@mixin button($size: 60px, $isHamburger: false) {
+  font-family: "Montserrat", "Noto Sans TC", sans-serif;
+  border: none;
+  background-color: transparent;
+  outline: none;
+  transition: transform 0.3s;
+  @if ($size>=60px) {
+    width: 150px;
+  }
+  @include media(479px) {
+    width: 40px;
+  }
+  text-align: right;
+  .btn_circle {
+    display: inline-block;
+    text-decoration: none;
+    position: relative;
+    transition: transform 0.3s;
+    > p {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: $white;
+      @include font(1);
+      transition: color 0.3s;
+      @if ($isHamburger==false) {
+        left: -90px;
+      } @else {
+        left: -75px;
+        font-weight: 700;
+      }
+      @include media(479px) {
+        @include font(0);
+        @if ($isHamburger==false) {
+          display: none;
+        } @else {
+          left: -65px;
+        }
+      }
+    }
+    > div {
+      width: $size;
+      height: $size;
+      border-radius: 50%;
+      border: 1px solid $primary;
+      cursor: pointer;
+      position: relative;
+      @include media(479px) {
+        @if ($size >= 60px) {
+          width: 40px;
+          height: 40px;
+        } @else {
+          width: 30px;
+          height: 30px;
+        }
+      }
+      @if ($isHamburger) {
+        > span {
+          display: block;
+          width: 15px;
+          height: 1px;
+          background-color: $white;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          box-shadow: 0px 3px 1px $white, 0px -3px 1px $white;
+          transition: box-shadow 0.3s;
+          &::before {
+            content: "";
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background-color: $primary;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+        }
+      } @else {
+        > img {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+        }
+      }
+      &::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 1px solid #ddd;
+        opacity: 0;
+        transition: transform 0.3s;
+      }
+    }
+  }
+  &:hover {
+    @include buttonActive;
+  }
+}

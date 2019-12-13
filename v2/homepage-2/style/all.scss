@@ -1,0 +1,212 @@
+@import "./var";
+@import "./navButton";
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  font-family: "Montserrat", "Noto Sans TC", sans-serif;
+}
+
+.nav {
+  position: fixed;
+  top: 30px;
+  right: 40px;
+  > .hamburger {
+    > div {
+      @include button(60px, true);
+    }
+  }
+  .list {
+    list-style: none;
+    height: 0;
+    visibility: hidden;
+    opacity: 0;
+    > li {
+      opacity: 0;
+      transition: opacity 0.3s;
+      margin-bottom: 10px;
+      > div {
+        @include button;
+      }
+    }
+  }
+  &:hover {
+    > .hamburger {
+      > div {
+        @include buttonActive(true);
+      }
+    }
+    > .list {
+      visibility: visible;
+      opacity: 1;
+      height: auto;
+      > li {
+        opacity: 1;
+        @for $i from 0 through 4 {
+          &:nth-of-type(#{$i}) {
+            transition-delay: 0.15s * $i;
+          }
+        }
+      }
+    }
+  }
+}
+.weather {
+  position: fixed;
+  bottom: 30px;
+  left: 40px;
+  display: flex;
+  > img {
+    width: 80px;
+  }
+  > div {
+    color: #fff;
+    margin-left: 10px;
+    > p:nth-of-type(1) {
+      font-weight: 400;
+      @include font(10);
+    }
+    > p:nth-of-type(2) {
+      @include font(3);
+    }
+  }
+}
+
+#threeJs {
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  button {
+    border: none;
+    outline: none;
+    background-color: transparent;
+    cursor: pointer;
+  }
+}
+
+#stats {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+}
+.logo {
+  position: fixed;
+  top: 40px;
+  left: 40px;
+  > a {
+    display: inline-block;
+    width: 25vw;
+    max-width: 150px;
+    min-width: 80px;
+  }
+}
+.setting {
+  position: fixed;
+  bottom: 30px;
+  right: 40px;
+  z-index: 1;
+  > div {
+    @include button(40px);
+  }
+  > input {
+    position: fixed;
+    opacity: 0;
+    &:checked + .setting_list {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+  &_list {
+    position: absolute;
+    top: 50%;
+    left: -240px;
+    transform: translateY(-50%);
+    list-style: none;
+    display: flex;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.5s;
+    @include font;
+    > li {
+      margin: 0 5px;
+      cursor: pointer;
+      input {
+        position: fixed;
+        opacity: 0;
+        & + img {
+          display: none;
+        }
+        &:checked {
+          ~ img {
+            display: none;
+          }
+          + img {
+            display: inline;
+          }
+          ~ label {
+            color: $primary;
+          }
+        }
+      }
+      label {
+        color: $white;
+        cursor: pointer;
+      }
+      img {
+        vertical-align: middle;
+      }
+      &:hover {
+        label {
+          color: $primary;
+        }
+      }
+    }
+  }
+}
+.progressbar {
+  position: fixed;
+  width: 40%;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: space-between;
+  list-style: none;
+  > input {
+    position: fixed;
+    opacity: 0;
+  }
+  > li {
+    color: $white;
+    @include font;
+    label {
+      display: inline-block;
+      cursor: pointer;
+      min-width: 80px;
+      text-align: center;
+    }
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: $primary;
+      position: relative;
+    }
+    &:not(:nth-of-type(1)) {
+      .dot {
+        &::before {
+          content: "";
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+        }
+      }
+    }
+  }
+}
+@import "./phone";

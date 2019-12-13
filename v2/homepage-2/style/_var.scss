@@ -1,0 +1,34 @@
+//網站顏色
+$primary: #67d2de;
+$white: #ffffff;
+
+//字級，行距，字間距
+$baseFont: 14px;
+$baseLine: 10px;
+$lineLevel: 1.2;
+$fontLevel: 2px;
+
+@function font($level: 0) {
+  @return $baseFont + round($level * $fontLevel);
+}
+@function line($size) {
+  @return ceil($size * $lineLevel / $baseLine) * $baseLine;
+}
+//字大小間距行高 @include font(數字, 行高:預設null) 0->14px 1->16px 2->18px 5->24px
+@mixin font($level: 0, $lineHeight: null) {
+  $size: font($level);
+  $line: line($size);
+  letter-spacing: $size / 5;
+  font-size: $size;
+  @if ($lineHeight) {
+    line-height: $lineHeight;
+  } @else {
+    line-height: $line;
+  }
+}
+//rwd @include media(max-width)
+@mixin media($screenSize) {
+  @media screen and (max-width: $screenSize) {
+    @content;
+  }
+}

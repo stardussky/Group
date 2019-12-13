@@ -30,65 +30,132 @@
     </div>
     <nav class="nav">
       <div class="hamburger">
-        <button>
-          <a href="#">
+        <div>
+          <div class="btn_circle">
             <p>MENU</p>
             <div>
               <span></span>
             </div>
-          </a>
-        </button>
+          </div>
+        </div>
       </div>
       <ul class="list">
         <li>
-          <button>
-            <a href="#">
+          <div>
+            <a class="btn_circle" href="#">
               <p>專案管理</p>
               <div>
                 <img src="./briefing.svg" width="20" />
               </div>
             </a>
-          </button>
+          </div>
         </li>
         <li>
-          <button>
-            <a href="#">
+          <div>
+            <a class="btn_circle" href="#">
               <p>番茄鐘</p>
               <div>
                 <img src="./time-left.svg" width="20" />
               </div>
             </a>
-          </button>
+          </div>
         </li>
         <li>
-          <button>
-            <a href="#">
+          <div>
+            <a class="btn_circle" href="#">
               <p>商城</p>
               <div>
                 <img src="./shopping-bag.svg" width="20" />
               </div>
             </a>
-          </button>
+          </div>
         </li>
         <li>
-          <button>
-            <a href="#">
+          <div>
+            <a class="btn_circle" href="#">
               <p>會員中心</p>
               <div>
                 <img src="./user.svg" width="20" />
               </div>
             </a>
-          </button>
+          </div>
         </li>
       </ul>
     </nav>
-    <button class="setting">
-      <img src="./settings.svg" width="30" />
-    </button>
+    <label class="setting">
+      <div>
+        <div class="btn_circle">
+          <div>
+            <img src="./settings.svg" width="20" />
+          </div>
+        </div>
+      </div>
+      <input type="checkbox" />
+      <ul class="setting_list">
+        <li>
+          <input type="radio" name="weather" id="day" checked />
+          <img src="./checked.svg" width="15" />
+          <img src="./unchecked.svg" width="15" />
+          <label for="day">Day</label>
+        </li>
+        <li>
+          <input type="radio" name="weather" id="night" />
+          <img src="./checked.svg" width="15" />
+          <img src="./unchecked.svg" width="15" />
+          <label for="night">Night</label>
+        </li>
+        <li>
+          <input type="radio" name="weather" id="rainy" />
+          <img src="./checked.svg" width="15" />
+          <img src="./unchecked.svg" width="15" />
+          <label for="rainy">Rainy</label>
+        </li>
+      </ul>
+    </label>
     <div class="weather">
-      <img src="./cloudy.svg" width="80" />
-      <p>20°</p>
+      <img src="./cloudy.svg" />
+      <div>
+        <p>20°</p>
+        <p>桃園市</p>
+      </div>
     </div>
+    <ul class="progressbar">
+      <li>
+        <label for="home">
+          <span class="dot"></span>
+          <p>首頁</p>
+        </label>
+      </li>
+      <input type="radio" id="home" name="progressbar" checked />
+      <li>
+        <label for="management">
+          <span class="dot"></span>
+          <p>專案管理</p>
+        </label>
+      </li>
+      <input type="radio" id="management" name="progressbar" />
+      <li>
+        <label for="clocks">
+          <span class="dot"></span>
+          <p>番茄鐘</p>
+        </label>
+      </li>
+      <input type="radio" id="clocks" name="progressbar" />
+      <li>
+        <label for="shop">
+          <span class="dot"></span>
+          <p>商城</p>
+        </label>
+      </li>
+      <input type="radio" id="shop" name="progressbar" />
+      <li>
+        <label for="member">
+          <span class="dot"></span>
+          <p>會員</p>
+        </label>
+      </li>
+      <input type="radio" id="member" name="progressbar" />
+    </ul>
 
     <script src="./libs/three.min.js"></script>
     <script src="./libs/OrbitControls.js"></script>
@@ -228,15 +295,12 @@
       let button1 = new CircleButton(50, 30, 50, "projectManagement");
       scene.add(button1.button);
       scene.add(button1.fontLabel);
-      button1.update();
       let button2 = new CircleButton(-50, 30, -50, "clock");
       scene.add(button2.button);
       scene.add(button2.fontLabel);
-      button2.update();
       let button3 = new CircleButton(0, 60, 0, "rain");
       scene.add(button3.button);
       scene.add(button3.fontLabel);
-      button3.update();
 
       //test
       let a;
@@ -327,6 +391,6 @@
       handleWindowResize();
       render();
     </script>
-    <script></script>
+    <script src="./js/all.js"></script>
   </body>
 </html>
